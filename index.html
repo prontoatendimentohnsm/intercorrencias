@@ -218,6 +218,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--red)!important;box-sh
 .lb-name{color:#fff;font-size:13px;text-align:center;max-width:80vw}
 .lb-close{background:#fff;color:#333;padding:8px 18px;border-radius:8px;font-weight:700}
 .ask-img-actions{display:flex;gap:8px;justify-content:center;margin-top:14px;flex-wrap:wrap}
+.site-footer{margin:26px 0 10px;text-align:center;font-size:11px;color:#9B9B9B}
 @media(max-width:480px){
 .registro{padding:13px;border-radius:10px}
 .reg-top h3{font-size:13.5px;line-height:1.35}
@@ -268,7 +269,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--red)!important;box-sh
 .mapa-filters{flex-direction:column;align-items:stretch}.mapa-filters .form-group{min-width:auto}
 .cad-tabs{overflow-x:auto;flex-wrap:nowrap;white-space:nowrap}.cad-tab{flex-shrink:0}
 }
-@media print{.app-header,.sidebar,.bottom-nav,.btn,.reg-actions,.filter-bar,.quick-filters,.search-box,.chart-actions,.share-menu,.btn-menu-toggle,.mapa-actions,.mapa-filters,.rf-actions{display:none!important}.main-area{margin:0;padding:0}}
+@media print{.app-header,.sidebar,.bottom-nav,.btn,.reg-actions,.filter-bar,.quick-filters,.search-box,.chart-actions,.share-menu,.btn-menu-toggle,.mapa-actions,.mapa-filters,.rf-actions,.site-footer{display:none!important}.main-area{margin:0;padding:0}}
 </style>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -431,7 +432,8 @@ input:focus,select:focus,textarea:focus{border-color:var(--red)!important;box-sh
 <div class="form-check"><input type="checkbox" onclick="toggleSenha('logSenhaCoord')"><span>Mostrar senha</span></div>
 <button type="button" class="btn-entrar" onclick="loginCoord()">Entrar</button>
 </div>
-<a style="display:block;text-align:center;margin-top:10px;font-size:13px;color:var(--red);cursor:pointer" onclick="recuperarSenha()">Esqueci minha senha</a>
+<a style="display:block;text-align:center;margin-top:10px;font-size:13px;color:var-red;cursor:pointer" onclick="recuperarSenha()">Esqueci minha senha</a>
+<div class="site-footer" style="margin-top:14px">Criado por: Guilherme Artur Campos</div>
 </div>
 </div>
 
@@ -448,6 +450,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--red)!important;box-sh
 </div>
 </div>
 
+<div class="site-footer">Criado por: Guilherme Artur Campos</div>
 <div id="toast-container"></div><div id="modalContainer"></div><div id="shareContainer"></div><div id="regFullContainer"></div><div id="lightbox"></div>
 <script>
 var db=null,ss=null,ed=null,tSel='Nominal',anx={},LR=null,LFl='',LPr='',LC='',LQF='today';
@@ -719,7 +722,6 @@ function shRelDet(){var l=LR||recs(),c={enc:0,int:0,sup:0};l.forEach(function(r)
 var h='<h2>Relatório Completo — Pronto Atendimento HNSM</h2><p><b>'+LPr+'</b><br>'+LFl+'</p><p><b>Total:</b> '+l.length+' registro(s): '+c.enc+' Encaminhamentos • '+c.int+' Intercorrências • '+c.sup+' Superlotação</p><p><b>Contagem:</b> '+LC+'</p><hr>';
 l.forEach(function(r){h+=conteudo(r)+'<hr>'});
 shMenu(h,'Compartilhar relatório')}
-/* REGISTRO INDIVIDUAL: sempre inclui as fotos em tamanho reduzido */
 function impRg(id){var r=getR(id);if(!r)return;var w=window.open('','_blank');w.document.write('<html><head><title>HNSM</title><style>body{font-family:Arial;padding:24px;color:#333;font-size:11px}h1{color:#C8102E;border-bottom:2px solid #C8102E;padding-bottom:6px;font-size:15px}p{font-size:10px}img{max-height:58px}</style></head><body><h1>HNSM — Registro Individual</h1><p><b>Total:</b> 1 registro</p><div style="border:1px solid #ddd;border-radius:6px;padding:10px">'+detalhe(r)+imgsPrint(r)+'</div></body></html>');w.document.close();setTimeout(function(){w.print()},300)}
 function pAnos(){var s=$('mapaFilterAno');if(!s)return;var cy=new Date().getFullYear(),o='';for(var y=cy-2;y<=cy+1;y++)o+='<option value="'+y+'"'+(y===cy?' selected':'')+'>'+y+'</option>';s.innerHTML=o}
 function renderMapa(){var fM=parseInt(gv('mapaFilterMes')),fA=parseInt(gv('mapaFilterAno')),fT=gv('mapaFilterTurno');
