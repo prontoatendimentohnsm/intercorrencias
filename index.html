@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HNSM — Pronto Atendimento</title>
+<style>
+:root{--red:#C8102E;--red-dark:#9B0B23;--red-light:#FEF5F7;--yellow:#F59E0B;--yellow-light:#FEF9E7;--gold:#D4A017;--gold-light:#FDF8EE;--gold-border:rgba(212,160,23,.25);--char:#333;--char-2:#555;--char-3:#666;--gray:#999;--gray-light:#CCC;--border:#EAEAEA;--border-light:#F4F4F4;--bg:#FAFAFA;--bg-2:#F5F5F5;--white:#fff;--green:#059669;--green-light:#ECFDF5;--amber-light:#FEF6E7;--sh-md:0 4px 16px rgba(0,0,0,.06);--sh-lg:0 10px 35px rgba(0,0,0,.08);--sh-xl:0 20px 50px rgba(0,0,0,.1);--r:8px;--r-lg:12px;--r-xl:16px}
+*{margin:0;padding:0;box-sizing:border-box}html{-webkit-text-size-adjust:100%}body{font-family:-apple-system,'Segoe UI',Roboto,sans-serif;font-size:15px;background:var(--bg);color:var(--char)}
+button{cursor:pointer;font-family:inherit;border:none;background:none;transition:all .2s}
+input,select,textarea{font-family:inherit;font-size:14px;outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--red)!important;box-shadow:0 0 0 3px rgba(200,16,46,.08)!important}
+.tela{display:none}.tela.ativa{display:block}
+.logo-wrap{background:linear-gradient(135deg,var(--gold-light),var(--white));border:1px solid var(--gold-border);border-radius:var(--r);padding:7px 12px;display:inline-flex;align-items:center}.logo-wrap img{height:32px}.logo-wrap-lg{padding:10px 18px}.logo-wrap-lg img{height:48px}
+.app-header{position:fixed;top:0;left:0;right:0;height:56px;background:rgba(255,255,255,.97);box-shadow:0 1px 2px rgba(0,0,0,.04);z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 16px;border-bottom:1px solid var(--border-light)}
+.header-left{display:flex;align-items:center;gap:10px}.header-right{display:flex;align-items:center;gap:10px}
+.user-badge{font-size:13px;color:var(--gray)}.user-badge b{color:var(--char)}
+.role-pill{font-size:10px;padding:2px 8px;border-radius:20px;font-weight:600}.role-prof{background:var(--red-light);color:var(--red)}.role-coord{background:var(--gold-light);color:#5A4209;border:1px solid var(--gold-border)}
+.btn-sair{color:var(--red);border:1px solid var(--red);padding:5px 12px;border-radius:var(--r);font-weight:600;font-size:12px}.btn-sair:hover{background:var(--red);color:#fff}
+.btn-menu-toggle{display:none;font-size:20px;padding:4px 8px}
+.sidebar-backdrop{display:none;position:fixed;top:56px;left:0;right:0;bottom:0;background:rgba(0,0,0,.3);z-index:89}.sidebar-backdrop.show{display:block}
+.sidebar{position:fixed;top:56px;left:0;bottom:0;width:230px;background:var(--white);border-right:1px solid var(--border);z-index:90;overflow-y:auto}
+.sb-header{background:linear-gradient(135deg,var(--gold-light),var(--white));padding:14px;display:flex;justify-content:center;border-bottom:1px solid var(--gold-border)}.sb-header img{height:36px}
+.sb-label{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--gray-light);padding:16px 20px 6px;font-weight:600}
+.nav-item{display:flex;align-items:center;gap:11px;padding:11px 20px;color:var(--char-3);font-size:14px;cursor:pointer;border-left:3px solid transparent;font-weight:500}
+.nav-item:hover{background:var(--red-light)}.nav-item.active{border-left-color:var(--red);background:var(--red-light);color:var(--red);font-weight:600}
+.nav-badge{font-size:10px;background:var(--red);color:#fff;border-radius:10px;padding:1px 7px;min-width:18px;text-align:center}
+.bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;height:58px;background:rgba(255,255,255,.97);border-top:1px solid var(--border);z-index:100}
+.bn-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:9px;color:var(--gray);cursor:pointer;font-weight:500}
+.bn-item.active{color:var(--red);font-weight:600}
+.main-area{margin-left:230px;margin-top:56px;padding:24px;max-width:1200px}
+#telaLogin{position:fixed;top:0;left:0;right:0;bottom:0;z-index:200;display:none;align-items:center;justify-content:center;background:linear-gradient(135deg,#FAFAFA,#F5F5F5 40%,var(--red-light));overflow-y:auto;padding:20px}
+#telaLogin.ativa{display:flex}
+.login-card{background:var(--white);border-radius:var(--r-xl);box-shadow:var(--sh-xl);padding:32px;max-width:380px;width:100%;border:1px solid var(--border-light)}
+.login-card .logo-wrap{display:flex;justify-content:center;margin-bottom:12px}
+.login-card h2{text-align:center;font-size:16px;color:var(--gray);margin-bottom:20px;font-weight:400}
+.login-tabs{display:flex;gap:4px;margin-bottom:20px;background:var(--bg-2);border-radius:var(--r);padding:3px}
+.login-tab{flex:1;text-align:center;padding:9px;border-radius:5px;font-size:13px;cursor:pointer;color:var(--gray);font-weight:500}
+.login-tab.active{background:var(--red);color:#fff;font-weight:600}
+.form-group{margin-bottom:14px}.form-group label{display:block;font-size:13px;font-weight:600;margin-bottom:5px;color:var(--char-2)}.req{color:var(--red)}
+.form-group input,.form-group select,.form-group textarea{width:100%;height:40px;border:1px solid var(--border);border-radius:var(--r);padding:0 12px;background:var(--white)}
+.form-group textarea{min-height:80px;padding:10px 12px;resize:vertical}
+.form-check{display:flex;align-items:center;gap:8px;margin-bottom:12px;font-size:13px;color:var(--gray)}
+.btn-entrar{width:100%;height:42px;background:var(--red);color:#fff;border-radius:var(--r);font-size:15px;font-weight:600}.btn-entrar:hover{background:var(--red-dark)}
+.btn{padding:7px 14px;border-radius:var(--r);font-weight:600;font-size:13px;display:inline-flex;align-items:center;gap:5px}
+.btn-primary{background:var(--red);color:#fff}.btn-primary:hover{background:var(--red-dark)}
+.btn-green{background:var(--green);color:#fff}.btn-danger{background:var(--red);color:#fff}
+.btn-outline{border:1px solid var(--border);color:var(--gray)}.btn-outline:hover{border-color:var(--char);color:var(--char)}
+.btn-outline-red{border:1px solid var(--red);color:var(--red)}.btn-outline-red:hover{background:var(--red);color:#fff}
+.btn-ghost{color:var(--gray);padding:6px 10px}.btn-ghost:hover{background:var(--bg-2)}
+.btn-yellow{background:var(--yellow);color:#333;font-weight:700}
+.btn-sm{padding:5px 10px;font-size:12px}.btn-block{width:100%}
+.section-title{font-size:clamp(17px,4vw,22px);font-weight:700;margin-bottom:18px}
+.section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:10px}
+.type-badge{font-size:10px;padding:2px 8px;border-radius:4px;font-weight:700;text-transform:uppercase;display:inline-block;margin-bottom:4px}
+.type-enc{background:var(--red-light);color:var(--red)}.type-int{background:var(--yellow-light);color:#92400E}.type-sup{background:var(--red);color:#fff}.type-anon{background:#EEE;color:#555}
+.registro{background:var(--white);border:1px solid var(--border);border-radius:var(--r-lg);padding:18px;margin-bottom:10px;cursor:pointer}
+.registro:hover{box-shadow:var(--sh-md);border-color:var(--red)}
+.reg-top{display:flex;justify-content:space-between;align-items:start;margin-bottom:6px;gap:8px}.reg-top h3{font-size:15px;font-weight:600}
+.reg-meta{font-size:12px;color:var(--gray);margin-bottom:6px;line-height:1.5}
+.meta-tag{display:inline-block;background:var(--bg-2);border-radius:4px;padding:1px 6px;margin:2px 2px 2px 0;font-size:11px}
+.meta-tag.occ-red{background:var(--red-light);color:var(--red);font-weight:700}
+.meta-tag.occ-yellow{background:var(--yellow-light);color:#92400E;font-weight:700}
+.meta-tag.occ-green{background:var(--green-light);color:var(--green);font-weight:700}
+.meta-tag.doc-tag{background:var(--gold-light);color:#5A4209;font-weight:600}
+.meta-tag.sv-alert{background:var(--red);color:#fff;font-weight:700}
+.reg-desc{font-size:14px;color:var(--char-3);line-height:1.5;margin-bottom:10px}
+.reg-actions{display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap}
+.selo{font-size:11px;padding:2px 9px;border-radius:20px;font-weight:600;white-space:nowrap}
+.selo-pendente{background:var(--amber-light);color:#7A4A0A}.selo-ciente{background:var(--green-light);color:#065F46}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.stat-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r-lg);padding:18px}
+.stat-num{font-size:28px;font-weight:800;color:var(--red);line-height:1}.stat-lbl{font-size:12px;color:var(--gray);margin-top:4px;font-weight:500}
+.quick-filters{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+.chip{padding:6px 12px;border-radius:20px;border:1px solid var(--border);background:var(--white);color:var(--gray);font-size:12px;cursor:pointer;font-weight:500}
+.chip.active{background:var(--red);color:#fff;border-color:var(--red)}
+.filter-bar{background:var(--white);border:1px solid var(--border);padding:14px;border-radius:var(--r-lg);margin-bottom:16px;display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+.filter-bar .form-group{margin-bottom:0;flex:1;min-width:120px}.filter-bar select,.filter-bar input{height:36px}
+.report-summary{background:linear-gradient(135deg,var(--red-light),var(--white));border-left:3px solid var(--red);padding:10px 14px;border-radius:var(--r);margin-bottom:16px;font-size:13px;font-weight:500}
+.form-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r-lg);padding:24px;max-width:800px;margin:0 auto}
+.form-card h2{font-size:18px;margin-bottom:18px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.form-grid .full{grid-column:1/-1}
+.form-section{background:var(--bg);border:1px solid var(--border-light);border-radius:var(--r);padding:16px;margin-bottom:16px}
+.form-section h4{font-size:14px;font-weight:600;margin-bottom:10px;padding-left:10px;border-left:3px solid var(--red)}
+.check-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.check-grid label{display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;color:var(--char-3)}
+.prof-dyn{display:flex;gap:6px;margin-bottom:6px;align-items:center}
+.prof-dyn input{flex:1;height:36px;border:1px solid var(--border);border-radius:var(--r);padding:0 10px}
+.prof-remove{color:var(--red);font-size:18px;padding:4px 6px}
+.btn-add-prof{border:1px dashed var(--border);color:var(--red);padding:7px 14px;border-radius:var(--r);width:100%}
+.file-label{display:flex;align-items:center;gap:8px;padding:9px 14px;border:1px dashed var(--border);border-radius:var(--r);cursor:pointer;color:var(--gray);font-size:13px}
+.file-label input{display:none}.file-chips{margin-top:6px}
+.btn-bar{display:flex;gap:10px;justify-content:flex-end;margin-top:18px}
+.back-btn{color:var(--gray);font-size:14px;margin-bottom:14px;font-weight:500;display:inline-block}.back-btn:hover{color:var(--red)}
+.cap-display{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:14px}
+.cap-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.cap-label{font-size:13px;font-weight:600}.cap-total{font-size:20px;font-weight:800;color:var(--red)}
+.cap-bar-container{height:10px;background:var(--border-light);border-radius:5px;overflow:hidden;margin:8px 0}
+.cap-bar{height:100%;border-radius:5px;transition:all .3s}
+.cap-bar-text{font-size:12px;color:var(--gray);display:flex;justify-content:space-between;margin-top:4px}
+.alert-banner{background:var(--red);color:#fff;border-radius:var(--r);padding:12px 14px;margin-bottom:14px;font-size:13px;font-weight:700;display:none;align-items:center;gap:10px}
+.alert-banner.show{display:flex}.alert-banner.ab-yellow{background:var(--yellow);color:#4A2E00}
+.chart-legend{margin-top:10px;padding-top:10px;border-top:1px solid var(--border-light)}
+.cl-row{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--char-3);padding:2px 0}
+.cl-left{display:flex;align-items:center;gap:6px}
+.cl-sw{width:12px;height:12px;border-radius:3px;display:inline-block}
+.charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px}
+.chart-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px}
+.chart-card h3{font-size:14px;margin-bottom:12px;font-weight:600}
+.chart-actions{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.mapa-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px}
+.mapa-stat-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px;text-align:center}
+.mapa-stat-card .num{font-size:28px;font-weight:800;color:var(--red);line-height:1}
+.mapa-stat-card .lbl{font-size:11px;color:var(--gray);margin-top:3px;font-weight:500}
+.mapa-filters{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:flex-end}
+.mapa-filters .form-group{margin-bottom:0;flex:1;min-width:100px}
+.mapa-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.mapa-header h3{font-size:16px;font-weight:700}
+.mapa-cal-container{background:var(--white);border:1px solid var(--border);border-radius:var(--r-lg);padding:12px;margin-bottom:16px;width:100%;max-width:100%}
+.mapa-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;width:100%;max-width:100%}
+.mapa-dow{text-align:center;font-size:10px;font-weight:700;color:var(--gray);padding:4px 0;text-transform:uppercase}
+.mapa-day{aspect-ratio:1;border:1px solid var(--border-light);border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:11px;cursor:pointer;position:relative;color:var(--char-3);font-weight:600;min-width:0;overflow:hidden}
+.mapa-day:hover{box-shadow:var(--sh-md);z-index:5}
+.mapa-day.empty{border:none;cursor:default}
+.mapa-day.int1{background:#FDF2F4;color:#991B1B;border-color:transparent}
+.mapa-day.int2{background:#FAD4DA;color:#7F1D1D;border-color:transparent}
+.mapa-day.int3{background:#F0A5B0;color:#7F1D1D;border-color:transparent}
+.mapa-day.int4{background:#E85668;color:#fff;border-color:transparent}
+.mapa-day.int5{background:var(--red);color:#fff;border-color:transparent}
+.day-badge{position:absolute;top:2px;right:2px;font-size:7px;font-weight:700;background:rgba(200,16,46,.9);color:#fff;border-radius:4px;padding:0 2px;min-width:10px;text-align:center}
+.mapa-day.int4 .day-badge,.mapa-day.int5 .day-badge{background:rgba(255,255,255,.35)}
+.day-tip{position:fixed;background:#2A2A2A;color:#fff;padding:10px 12px;border-radius:8px;font-size:11.5px;z-index:9999;pointer-events:none;display:none;max-width:230px;line-height:1.7;box-shadow:0 6px 20px rgba(0,0,0,.35)}
+.day-tip b{color:#F8B4C2}
+.mapa-legend{display:flex;gap:10px;margin-top:12px;font-size:10.5px;color:var(--gray);flex-wrap:wrap;padding-top:9px;border-top:1px solid var(--border-light);justify-content:center}
+.mapa-legend .sw{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:3px;vertical-align:middle}
+.mapa-heat-strip{display:flex;gap:1px;margin-top:8px;height:6px;border-radius:3px;overflow:hidden;width:100%;max-width:100%}
+.mapa-heat-strip div{flex:1;min-width:0}
+.mapa-actions{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.cad-tabs{display:flex;gap:4px;margin-bottom:16px;flex-wrap:wrap}
+.cad-tab{padding:8px 14px;border-radius:var(--r);border:1px solid var(--border);background:var(--white);color:var(--gray);font-size:13px;cursor:pointer;font-weight:500}
+.cad-tab.active{background:var(--red);color:#fff;border-color:var(--red);font-weight:600}
+.cad-content{display:none}.cad-content.active{display:block}
+.cad-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r-lg);padding:20px;max-width:500px}
+.cad-card h3{font-size:14px;margin-bottom:12px;padding-left:10px;border-left:3px solid var(--red);font-weight:600}
+.radio-tabs{display:flex;margin-bottom:12px}
+.radio-tabs label{flex:1;text-align:center;padding:9px;border:1px solid var(--border);cursor:pointer;font-size:14px;color:var(--gray);font-weight:500}
+.radio-tabs label:first-child{border-radius:var(--r) 0 0 var(--r)}
+.radio-tabs label:last-child{border-radius:0 var(--r) var(--r) 0;border-left:none}
+.radio-tabs label.ativo{background:var(--red);color:#fff;border-color:var(--red);font-weight:600}
+#toast-container{position:fixed;bottom:70px;right:16px;z-index:9999;display:flex;flex-direction:column;gap:8px}
+.toast{background:var(--white);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--sh-lg);padding:11px 15px;font-size:13px;border-left:3px solid;min-width:250px}
+.toast.success{border-left-color:var(--green)}.toast.error{border-left-color:var(--red)}.toast.info{border-left-color:var(--char)}
+.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.35);z-index:5000;display:flex;align-items:center;justify-content:center;padding:20px}
+.modal-box{background:var(--white);border-radius:var(--r-xl);box-shadow:var(--sh-xl);padding:22px;max-width:380px;width:100%}
+.modal-box h3{font-size:17px;margin-bottom:10px}
+.modal-box p{font-size:13px;color:var(--gray);margin-bottom:18px;line-height:1.6}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end}
+.reg-full-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.4);z-index:5000;display:flex;align-items:center;justify-content:center;padding:16px}
+.reg-full-box{background:var(--white);border-radius:var(--r-xl);box-shadow:var(--sh-xl);padding:24px;max-width:600px;width:100%;max-height:88vh;overflow-y:auto;position:relative}
+.reg-full-box h2{font-size:18px;margin-bottom:6px}
+.rf-type{margin-bottom:14px}
+.rf-field{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border-light)}
+.rf-field:last-child{border-bottom:none}
+.rf-label{font-weight:600;color:var(--char-2);font-size:13px}
+.rf-value{color:var(--char-3);font-size:13px;text-align:right;max-width:60%}
+.rf-close{position:absolute;top:14px;right:14px;font-size:24px;color:var(--gray)}
+.rf-header{display:flex;justify-content:space-between;align-items:start;margin-bottom:16px}
+.rf-status{margin-bottom:14px}
+.rf-actions{position:sticky;bottom:-24px;margin:14px -24px -24px;padding:12px 16px;background:var(--white);border-top:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap;border-radius:0 0 var(--r-xl) var(--r-xl);box-shadow:0 -4px 14px rgba(0,0,0,.08)}
+.rf-actions .btn{flex:1;justify-content:center;min-width:120px}
+.rf-actions .btn-green{order:-1;min-width:150px;font-weight:700}
+.rf-detail{border:1px solid var(--border);border-radius:var(--r);padding:12px;background:var(--bg);margin-top:10px}
+.share-menu{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.35);z-index:5000;display:flex;align-items:flex-end;justify-content:center}
+.share-box{background:var(--white);border-radius:var(--r-xl) var(--r-xl) 0 0;width:100%;max-width:420px;padding:20px;max-height:80vh;overflow-y:auto}
+.share-box h3{font-size:17px;margin-bottom:14px;text-align:center}
+.share-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.share-btn{display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px;border:1px solid var(--border);border-radius:var(--r-lg);cursor:pointer;font-size:12px;color:var(--char-3);font-weight:500}
+.share-btn:hover{border-color:var(--red);background:var(--red-light);color:var(--red)}
+.empty{text-align:center;padding:40px 20px;color:var(--gray)}
+.search-box{position:relative;margin-bottom:14px}
+.search-box input{width:100%;height:40px;border:1px solid var(--border);border-radius:var(--r-lg);padding:0 12px 0 36px}
+.search-box .search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--gray-light)}
+.toggle-sw{display:inline-flex;align-items:center;gap:8px;cursor:pointer}
+.toggle-sw input{display:none}
+.toggle-sw .track{width:36px;height:20px;background:var(--border);border-radius:10px;position:relative;transition:all .2s;display:inline-block}
+.toggle-sw .track::after{content:'';position:absolute;width:16px;height:16px;background:#fff;border-radius:50%;top:2px;left:2px;transition:all .2s;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+.toggle-sw input:checked+.track{background:var(--red)}
+.toggle-sw input:checked+.track::after{left:18px}
+.dash-welcome{margin-bottom:24px}
+.dash-welcome h2{font-size:clamp(18px,5vw,24px);font-weight:700;margin-bottom:4px}
+.dash-welcome p{font-size:14px;color:var(--gray)}
+.dash-shortcuts{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:28px}
+.dash-shortcut{background:var(--white);border:1px solid var(--border);border-radius:var(--r-lg);padding:20px 16px;text-align:center;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:8px}
+.dash-shortcut:hover{box-shadow:var(--sh-md);border-color:var(--red)}
+.ds-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700}
+.ds-icon.red{background:var(--red-light);color:var(--red)}
+.ds-icon.yellow{background:var(--yellow-light);color:#92400E}
+.ds-icon.gold{background:var(--gold-light);color:#5A4209}
+.ds-label{font-size:13px;font-weight:600}.ds-count{font-size:11px;color:var(--gray)}
+.dash-section{margin-bottom:28px}
+.dash-section-title{font-size:16px;font-weight:700;margin-bottom:14px}
+.dash-pendentes{display:flex;flex-direction:column;gap:10px}
+.anx-chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--border);border-radius:8px;padding:4px 8px;margin:3px 4px 3px 0;font-size:12px;max-width:230px;overflow:hidden;cursor:zoom-in;background:var(--white)}
+.anx-chip img{width:36px;height:36px;object-fit:cover;border-radius:6px}
+.anx-chip.anx-doc{background:var(--bg);cursor:default}
+.anx-chip span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.card-thumbs{display:flex;gap:5px;margin:-2px 0 8px;flex-wrap:wrap}
+.card-thumbs img{width:48px;height:48px;object-fit:cover;border-radius:6px;border:1px solid var(--border);cursor:zoom-in}
+.card-thumbs img:hover{border-color:var(--red)}
+.photo-tag{background:#E0F2FE!important;color:#0369A1!important;font-weight:700}
+.rf-gallery{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.rf-thumb{width:92px;height:92px;border-radius:8px;overflow:hidden;border:1px solid var(--border);cursor:zoom-in;background:var(--bg)}
+.rf-thumb img{width:100%;height:100%;object-fit:cover}
+.rf-thumb:hover{border-color:var(--red);box-shadow:var(--sh-md)}
+.lb-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.85);z-index:6000;display:flex;align-items:center;justify-content:center;padding:20px}
+.lb-box{max-width:94vw;max-height:92vh;display:flex;flex-direction:column;align-items:center;gap:12px}
+.lb-box img{max-width:92vw;max-height:80vh;border-radius:10px;box-shadow:0 10px 40px rgba(0,0,0,.5)}
+.lb-name{color:#fff;font-size:13px;text-align:center;max-width:80vw}
+.lb-close{background:#fff;color:#333;padding:8px 18px;border-radius:8px;font-weight:700}
+.ask-img-actions{display:flex;gap:8px;justify-content:center;margin-top:14px;flex-wrap:wrap}
+@media(max-width:480px){
+.registro{padding:13px;border-radius:10px}
+.reg-top h3{font-size:13.5px;line-height:1.35}
+.type-badge{font-size:9px}
+.reg-meta{line-height:1.7;font-size:11px}
+.meta-tag{font-size:10px;padding:1px 5px}
+.reg-desc{font-size:12.5px}
+.selo{font-size:10px;padding:2px 7px}
+.reg-actions{justify-content:flex-start}
+.reg-actions .btn{flex:1 1 44%;justify-content:center;min-width:0;font-size:11px;padding:6px 4px}
+.stats-grid{grid-template-columns:repeat(2,1fr);gap:8px}
+.stat-card{padding:12px}
+.stat-num{font-size:22px}
+.mapa-cal-container{padding:8px}
+.mapa-grid{gap:2px}
+.mapa-day{aspect-ratio:auto;height:30px;font-size:9.5px;border-radius:4px}
+.mapa-dow{font-size:8px;padding:2px 0}
+.mapa-summary{grid-template-columns:repeat(3,1fr);gap:6px}
+.mapa-stat-card{padding:10px 4px}
+.mapa-stat-card .num{font-size:19px}
+.mapa-stat-card .lbl{font-size:9px}
+.mapa-header h3{font-size:13.5px}
+.mapa-header span{display:none}
+.reg-full-overlay{padding:8px;align-items:flex-end}
+.reg-full-box{padding:18px 14px;max-height:92vh;border-radius:var(--r-xl) var(--r-xl) 0 0}
+.rf-actions{margin:12px -14px -18px;padding:10px 10px}
+.rf-actions .btn{min-width:0;flex:1 1 44%;font-size:11.5px}
+.rf-actions .btn-green{font-size:12.5px}
+.rf-field{flex-direction:column;gap:2px}
+.rf-value{text-align:left;max-width:100%}
+.filter-bar .form-group{min-width:100%}
+.card-thumbs img{width:42px;height:42px}
+.rf-thumb{width:76px;height:76px}
+}
+@media(max-width:768px){
+.btn-menu-toggle{display:block}
+.sidebar{transform:translateX(-100%);transition:transform .3s}.sidebar.show{transform:translateX(0)}
+.bottom-nav{display:flex}
+.main-area{margin-left:0;padding:14px 14px 72px}
+.form-grid,.check-grid{grid-template-columns:1fr}
+.stats-grid,.mapa-summary{grid-template-columns:1fr}
+.filter-bar{flex-direction:column}
+.form-card{padding:18px}
+.logo-wrap img{height:26px}
+#toast-container{top:60px;bottom:auto;right:10px;left:10px}.toast{min-width:auto}
+.login-card{padding:24px}
+.dash-shortcuts{grid-template-columns:repeat(2,1fr)}
+.mapa-filters{flex-direction:column;align-items:stretch}.mapa-filters .form-group{min-width:auto}
+.cad-tabs{overflow-x:auto;flex-wrap:nowrap;white-space:nowrap}.cad-tab{flex-shrink:0}
+}
+@media print{.app-header,.sidebar,.bottom-nav,.btn,.reg-actions,.filter-bar,.quick-filters,.search-box,.chart-actions,.share-menu,.btn-menu-toggle,.mapa-actions,.mapa-filters,.rf-actions{display:none!important}.main-area{margin:0;padding:0}}
+</style>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+</head>
+<body>
+
+<div class="app-header" id="appHeader" style="display:none">
+<div class="header-left"><button type="button" class="btn-menu-toggle" onclick="toggleSidebar()">☰</button><div class="logo-wrap"><img src="logo_hor.png" alt="HNSM"></div></div>
+<div class="header-right" id="userInfo"></div>
+</div>
+<div class="sidebar-backdrop" id="sidebarBackdrop" onclick="toggleSidebar()"></div>
+<aside class="sidebar" id="sidebar" style="display:none"></aside>
+<nav class="bottom-nav" id="bottomNav" style="display:none"></nav>
+
+<main class="main-area" id="mainArea" style="display:none">
+
+<div class="tela" id="telaPainelProf">
+<div id="profDash" style="display:none">
+<div class="dash-welcome"><h2 id="dashProfNome"></h2><p>Bem-vindo ao sistema do Pronto Atendimento HNSM</p></div>
+<div class="dash-shortcuts" id="dashProfShortcuts"></div>
+<div class="dash-section"><div class="dash-section-title">Registros Recentes</div><div id="dashProfRecentes"></div></div>
+</div>
+<div id="profEnc" style="display:none"><div class="section-header"><h1>Encaminhamentos Indevidos</h1><button type="button" class="btn btn-primary" onclick="showTela('telaFormEnc')">+ Novo registro</button></div><div id="listaEnc"></div></div>
+<div id="profInt" style="display:none"><div class="section-header"><h1>Intercorrências</h1><button type="button" class="btn btn-primary" onclick="showTela('telaFormInt')">+ Novo registro</button></div><div id="listaInt"></div></div>
+<div id="profSup" style="display:none"><div class="section-header"><h1>Superlotação</h1><button type="button" class="btn btn-primary" onclick="showTela('telaFormSup')">+ Novo registro</button></div><div id="listaSup"></div></div>
+<div id="profRel" style="display:none"><h1 class="section-title">Relatórios</h1>
+<div class="search-box"><span class="search-icon">🔍</span><input type="text" id="relSearchProf" placeholder="Buscar por paciente, descrição, setor, médicos..." oninput="gerarRelatorio('prof')"></div>
+<div class="quick-filters"><button type="button" class="chip active" onclick="setQuickFilter('today','Prof',this)">Hoje</button><button type="button" class="chip" onclick="setQuickFilter('week','Prof',this)">7 dias</button><button type="button" class="chip" onclick="setQuickFilter('month','Prof',this)">Este mês</button><button type="button" class="chip" onclick="setQuickFilter('year','Prof',this)">Este ano</button><button type="button" class="chip" onclick="setQuickFilter('all','Prof',this)">Tudo</button></div>
+<div class="filter-bar">
+<div class="form-group"><label>Escopo</label><select id="relEscopoProf" onchange="gerarRelatorio('prof')"><option value="meus">Meus registros</option><option value="todos">Todos os registros</option></select></div>
+<div class="form-group"><label>Tipo</label><select id="relTipoProf" onchange="gerarRelatorio('prof')"><option value="">Todos</option><option value="enc">Encaminhamentos</option><option value="int">Intercorrências</option><option value="sup">Superlotação</option></select></div>
+<div class="form-group"><label>Turno</label><select id="relTurnoProf" onchange="gerarRelatorio('prof')"><option value="">Ambos</option><option value="Diurno">Diurno</option><option value="Noturno">Noturno</option></select></div>
+<div class="form-group"><label>De</label><input type="date" id="relDeProf" onchange="gerarRelatorio('prof')"></div>
+<div class="form-group"><label>Até</label><input type="date" id="relAteProf" onchange="gerarRelatorio('prof')"></div>
+<button type="button" class="btn btn-yellow" onclick="gerarRelatorio('prof')">Gerar</button>
+</div>
+<div id="statsProf"></div><div id="chartsProf" class="charts-grid"></div><div id="tabelaRelProf"></div>
+</div>
+</div>
+
+<div class="tela" id="telaPainelCoord">
+<div id="coordDash" style="display:none">
+<div class="dash-welcome"><h2 id="dashCoordNome"></h2><p>Painel de Gestão do Pronto Atendimento HNSM</p></div>
+<div class="dash-shortcuts" id="dashCoordShortcuts"></div>
+<div class="dash-section"><div class="dash-section-title">Pendentes de Ciência</div><div id="dashCoordPendentes" class="dash-pendentes"></div></div>
+</div>
+<div id="coordPend" style="display:none"><h1 class="section-title">Pendentes de Ciência</h1><div id="listaPend"></div></div>
+<div id="coordHist" style="display:none"><h1 class="section-title">Histórico</h1>
+<div class="search-box"><span class="search-icon">🔍</span><input type="text" id="histSearch" placeholder="Buscar por paciente, descrição, setor, médicos..." oninput="renderHist()"></div>
+<div class="quick-filters"><button type="button" class="chip active" onclick="setHistFilter('today',this)">Hoje</button><button type="button" class="chip" onclick="setHistFilter('week',this)">7 dias</button><button type="button" class="chip" onclick="setHistFilter('month',this)">Este mês</button><button type="button" class="chip" onclick="setHistFilter('year',this)">Este ano</button><button type="button" class="chip" onclick="setHistFilter('all',this)">Tudo</button></div>
+<div class="filter-bar">
+<div class="form-group"><label>Tipo</label><select id="histTipo" onchange="renderHist()"><option value="">Todos</option><option value="enc">Encaminhamentos</option><option value="int">Intercorrências</option><option value="sup">Superlotação</option></select></div>
+<div class="form-group"><label>Turno</label><select id="histTurno" onchange="renderHist()"><option value="">Ambos</option><option value="Diurno">Diurno</option><option value="Noturno">Noturno</option></select></div>
+<div class="form-group"><label>De</label><input type="date" id="histDe" onchange="renderHist()"></div>
+<div class="form-group"><label>Até</label><input type="date" id="histAte" onchange="renderHist()"></div>
+</div>
+<div id="listaHist"></div>
+</div>
+<div id="coordRel" style="display:none"><h1 class="section-title">Relatórios</h1>
+<div class="search-box"><span class="search-icon">🔍</span><input type="text" id="relSearchCoord" placeholder="Buscar por paciente, descrição, setor..." oninput="gerarRelatorio('coord')"></div>
+<div class="quick-filters"><button type="button" class="chip active" onclick="setQuickFilter('today','Coord',this)">Hoje</button><button type="button" class="chip" onclick="setQuickFilter('week','Coord',this)">7 dias</button><button type="button" class="chip" onclick="setQuickFilter('month','Coord',this)">Este mês</button><button type="button" class="chip" onclick="setQuickFilter('year','Coord',this)">Este ano</button><button type="button" class="chip" onclick="setQuickFilter('all','Coord',this)">Tudo</button></div>
+<div class="filter-bar">
+<div class="form-group"><label>Tipo</label><select id="relTipoCoord" onchange="gerarRelatorio('coord')"><option value="">Todos</option><option value="enc">Encaminhamentos</option><option value="int">Intercorrências</option><option value="sup">Superlotação</option></select></div>
+<div class="form-group"><label>Turno</label><select id="relTurnoCoord" onchange="gerarRelatorio('coord')"><option value="">Ambos</option><option value="Diurno">Diurno</option><option value="Noturno">Noturno</option></select></div>
+<div class="form-group"><label>De</label><input type="date" id="relDeCoord" onchange="gerarRelatorio('coord')"></div>
+<div class="form-group"><label>Até</label><input type="date" id="relAteCoord" onchange="gerarRelatorio('coord')"></div>
+<button type="button" class="btn btn-yellow" onclick="gerarRelatorio('coord')">Gerar</button>
+</div>
+<div id="statsCoord"></div><div id="chartsCoord" class="charts-grid"></div><div id="tabelaRelCoord"></div>
+</div>
+<div id="coordMapa" style="display:none"><h1 class="section-title">Indicador de Superlotação</h1>
+<div class="mapa-filters">
+<div class="form-group"><label>Mês</label><select id="mapaFilterMes" onchange="renderMapa()"><option value="-1">Todos os meses</option><option value="0">Janeiro</option><option value="1">Fevereiro</option><option value="2">Março</option><option value="3">Abril</option><option value="4">Maio</option><option value="5">Junho</option><option value="6">Julho</option><option value="7">Agosto</option><option value="8">Setembro</option><option value="9">Outubro</option><option value="10">Novembro</option><option value="11">Dezembro</option></select></div>
+<div class="form-group"><label>Ano</label><select id="mapaFilterAno" onchange="renderMapa()"></select></div>
+<div class="form-group"><label>Turno</label><select id="mapaFilterTurno" onchange="renderMapa()"><option value="">Todos os turnos</option><option value="Diurno">Diurno</option><option value="Noturno">Noturno</option></select></div>
+</div>
+<div class="mapa-actions"><button type="button" class="btn btn-sm btn-outline" onclick="imprimirMapa()">Imprimir indicador</button><button type="button" class="btn btn-sm btn-ghost" onclick="compartilharMapa()">Compartilhar</button></div>
+<div id="mapaContainer"></div>
+</div>
+<div id="coordCad" style="display:none"><h1 class="section-title">Cadastros</h1>
+<div class="cad-tabs"><button type="button" class="cad-tab active" onclick="navCad('cadCap')">Capacidade</button><button type="button" class="cad-tab" onclick="navCad('cadTrigger')">Gatilho</button><button type="button" class="cad-tab" onclick="navCad('cadProf')">Profissionais</button><button type="button" class="cad-tab" onclick="navCad('cadCoord')">Coordenação</button><button type="button" class="cad-tab" onclick="navCad('cadSetor')">Setores</button><button type="button" class="cad-tab" onclick="navCad('cadEnv')">Envio Auto</button></div>
+<div id="cadCap" class="cad-content active"><div class="cad-card"><h3>Capacidade do PA</h3><div class="form-group"><label>Leitos Sala Vermelha</label><input type="number" id="capVermelha" min="0" value="2"></div><div class="form-group"><label>Leitos Observação</label><input type="number" id="capObservacao" min="0" value="3"></div><div class="form-group"><label>Leitos Medicação</label><input type="number" id="capMedicacao" min="0" value="5"></div><div class="form-group"><label>Gatilho Sala Vermelha (nº de pacientes) <span class="req">*</span></label><input type="number" id="capGatilhoSV" min="1" max="20" value="2"><span style="font-size:11px;color:var(--gray);display:block;margin-top:4px">Nº de pacientes ocupando a Sala Vermelha que caracteriza superlotação. Pode ser alterado quando necessário.</span></div><button type="button" class="btn btn-primary btn-block" onclick="salvarCapacidade()">Salvar capacidade</button></div></div>
+<div id="cadTrigger" class="cad-content"><div class="cad-card"><h3>Gatilho de Superlotação</h3><div class="form-group"><label class="toggle-sw"><input type="checkbox" id="triggerAtivo" checked><span class="track"></span></label><span style="font-size:13px;margin-left:6px">Disparo automático (Sala Vermelha no gatilho configurado ou ocupação ≥ limite)</span></div><div class="form-group"><label>Limite de ocupação geral (%)</label><input type="number" id="triggerThreshold" value="150" min="100" max="500"></div><div class="form-group"><label>E-mails da coordenação</label><input type="text" id="triggerEmails" placeholder="coord@hnsm.org"></div><button type="button" class="btn btn-primary btn-block" onclick="salvarTrigger()">Salvar gatilho</button><div class="trigger-log" id="triggerLogList"></div></div></div>
+<div id="cadProf" class="cad-content"><div class="cad-card"><h3>Novo Profissional</h3><div class="form-group"><label>CRM <span class="req">*</span></label><input type="text" id="cadCrm" placeholder="5 ou 6 dígitos" maxlength="6"></div><div class="form-group"><label>Nome completo <span class="req">*</span></label><input type="text" id="cadNome"></div><button type="button" class="btn btn-primary btn-block" onclick="cadastrarProfissional()">Cadastrar</button><div class="setor-list" id="listaProfissionais" style="margin-top:14px"></div></div></div>
+<div id="cadCoord" class="cad-content"><div class="cad-card"><h3>Usuário Coordenação</h3><div class="form-group"><label>Nome <span class="req">*</span></label><input type="text" id="cadCoordNome"></div><div class="form-group"><label>Usuário <span class="req">*</span></label><input type="text" id="cadCoordUser"></div><div class="form-group"><label>E-mail</label><input type="email" id="cadCoordEmail"></div><div class="form-group"><label>Senha <span class="req">*</span></label><input type="password" id="cadCoordSenha" placeholder="Mín. 6 caracteres"></div><button type="button" class="btn btn-primary btn-block" onclick="cadastrarCoordenacao()">Cadastrar</button></div></div>
+<div id="cadSetor" class="cad-content"><div class="cad-card"><h3>Setores de Intercorrência</h3><div class="form-group"><label>Nome do setor</label><input type="text" id="cadSetorNome"></div><button type="button" class="btn btn-primary btn-block" onclick="adicionarSetor()">Adicionar</button><div class="setor-list" id="listaSetores"></div></div></div>
+<div id="cadEnv" class="cad-content"><div class="cad-card"><h3>Envio Automático de Relatórios</h3><div class="form-group"><label>Escopo</label><select id="envEscopo" onchange="document.getElementById('envSetorGroup').style.display=this.value==='setor'?'block':'none'"><option value="geral">Geral</option><option value="enc">Encaminhamentos</option><option value="int">Intercorrências</option><option value="sup">Superlotação</option><option value="setor">Setor específico</option></select></div><div class="form-group" id="envSetorGroup" style="display:none"><label>Setor</label><select id="envSetor"></select></div><div class="form-group"><label>Dia do mês</label><select id="envDia"><option value="1">1º</option><option value="5">5º</option><option value="10">10º</option><option value="15">15º</option><option value="20">20º</option><option value="ultimo">Último</option></select></div><div class="form-group"><label>E-mails (vírgula)</label><input type="text" id="envEmails"></div><button type="button" class="btn btn-primary btn-block" onclick="adicionarEnvio()">Adicionar configuração</button><div class="email-list" id="listaEnvios"></div></div></div>
+</div>
+</div>
+
+<div class="tela" id="telaFormEnc"><button type="button" class="back-btn" onclick="voltarPainel()">← Voltar</button>
+<div class="form-card"><h2>Registrar Encaminhamento Indevido</h2><div class="form-grid">
+<div class="full form-group"><label>Nome do paciente <span class="req">*</span></label><input type="text" id="encPaciente"></div>
+<div class="form-group"><label>Data <span class="req">*</span></label><input type="date" id="encData"></div>
+<div class="form-group"><label>Turno <span class="req">*</span></label><select id="encTurno"><option value="Diurno">Diurno</option><option value="Noturno">Noturno</option></select></div>
+<div class="full"><label style="font-size:13px;font-weight:600;margin-bottom:5px;display:block">Demais profissionais envolvidos</label><div id="encProfs"></div><button type="button" class="btn-add-prof" onclick="addProfField()">+ Adicionar profissional</button></div>
+<div class="full form-group"><label>Origem do encaminhamento</label><select id="encOrigem"><option value="SAMU">SAMU</option><option value="Sanitária">Sanitária</option><option value="Meios próprios">Meios próprios</option></select></div>
+<div class="form-group"><label>Município de origem</label><input type="text" id="encMunicipio"></div>
+<div class="form-group"><label>Hospital de origem</label><input type="text" id="encHospital"></div>
+<div class="full form-group"><label>Quem encaminhou (quando houver)</label><input type="text" id="encMedico"></div>
+<div class="full form-group"><label>Caso do paciente</label><textarea id="encCaso" rows="4"></textarea></div>
+<div class="full form-group"><label>Orientações feitas sobre o caso</label><textarea id="encOrientacoes" rows="3"></textarea></div>
+<div class="full form-group"><label>Condutas tomadas</label><textarea id="encCondutas" rows="3"></textarea></div>
+<div class="full form-group"><label>Anexos / fotos (máx. 3)</label><label class="file-label">Selecionar arquivos<input type="file" id="encAnexos" multiple accept="image/*,.pdf" onchange="handleAnexos(this)"></label><div class="file-chips" id="encAnexosList"></div></div>
+</div><div class="btn-bar"><button type="button" class="btn btn-outline" onclick="voltarPainel()">Cancelar</button><button type="button" class="btn btn-primary" onclick="saveEnc()">Salvar registro</button></div></div>
+</div>
+
+<div class="tela" id="telaFormInt"><button type="button" class="back-btn" onclick="voltarPainel()">← Voltar</button>
+<div class="form-card"><h2>Registrar Intercorrência</h2>
+<div class="form-group"><label>Tipo de registro <span class="req">*</span></label><div class="radio-tabs"><label id="rtNominal" class="ativo" onclick="selectTipoInt('Nominal')">Nominal</label><label id="rtAnonimo" onclick="selectTipoInt('Anônimo')">Anônimo</label></div></div>
+<p id="intAnonHint" style="display:none;font-size:12px;color:var(--char-3);background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:10px;margin-bottom:14px">No registro <b>anônimo</b>, o nome de quem registra <b>não será divulgado</b> em nenhuma tela, nem para a coordenação. O anonimato é sobre o autor do registro — o paciente pode ser identificado, se você quiser.</p>
+<div class="form-grid">
+<div class="form-group"><label>Data <span class="req">*</span></label><input type="date" id="intData"></div>
+<div class="form-group"><label>Turno <span class="req">*</span></label><select id="intTurno"><option value="Diurno">Diurno</option><option value="Noturno">Noturno</option></select></div>
+<div class="full form-group"><label id="intPacienteLabel">Nome do paciente</label><input type="text" id="intPaciente"></div>
+<div class="full form-group"><label>Profissional(is) envolvido(s)</label><input type="text" id="intProfs"></div>
+<div class="form-group"><label>Setor</label><select id="intSetor" onchange="document.getElementById('intOutroSetorGroup').style.display=this.value==='Outro'?'block':'none'"></select></div>
+<div class="form-group" id="intOutroSetorGroup" style="display:none"><label>Especificar setor</label><input type="text" id="intOutroSetor"></div>
+<div class="full form-group"><label>Descrição da intercorrência</label><textarea id="intDesc" rows="4"></textarea></div>
+<div class="full form-group"><label>Anexos / fotos (máx. 3)</label><label class="file-label">Selecionar arquivos<input type="file" id="intAnexos" multiple accept="image/*,.pdf" onchange="handleAnexos(this)"></label><div class="file-chips" id="intAnexosList"></div></div>
+</div><div class="btn-bar"><button type="button" class="btn btn-outline" onclick="voltarPainel()">Cancelar</button><button type="button" class="btn btn-primary" onclick="saveInt()">Salvar registro</button></div></div>
+</div>
+
+<div class="tela" id="telaFormSup"><button type="button" class="back-btn" onclick="voltarPainel()">← Voltar</button>
+<div class="form-card"><h2>Registrar Superlotação</h2>
+<div class="form-grid"><div class="form-group"><label>Data <span class="req">*</span></label><input type="date" id="supData"></div><div class="form-group"><label>Turno <span class="req">*</span></label><select id="supTurno"><option value="Diurno">Diurno</option><option value="Noturno">Noturno</option></select></div><div class="full form-group"><label>Médicos plantonistas</label><input type="text" id="supMedicos"></div></div>
+<div class="alert-banner" id="alertBanner"><span>⚠</span><span id="alertBannerText"></span></div>
+<div class="form-section"><h4>Situação do Pronto Atendimento</h4><div class="form-grid">
+<div class="form-group"><label>Sala Vermelha <span style="font-size:11px;color:var(--gray)">(cap: <span id="lblCapSV">2</span>)</span></label><input type="number" id="supSalaVermelha" min="0" oninput="capBar()"></div>
+<div class="form-group"><label>Observação <span style="font-size:11px;color:var(--gray)">(cap: <span id="lblCapObs">3</span>)</span></label><input type="number" id="supObservacao" min="0" oninput="capBar()"></div>
+<div class="form-group"><label>Medicação <span style="font-size:11px;color:var(--gray)">(cap: <span id="lblCapMed">5</span>)</span></label><input type="number" id="supMedicacao" min="0" oninput="capBar()"></div>
+<div class="form-group"><label>Outros pacientes</label><input type="number" id="supOutrosPac" min="0" oninput="capBar()"></div>
+<div class="full"><div class="cap-display"><div class="cap-row"><span class="cap-label">Total de pacientes no PA</span><span class="cap-total" id="totalPacientes">0</span></div><div class="cap-bar-container"><div class="cap-bar" id="capBar" style="width:0%;background:var(--green)"></div></div><div class="cap-bar-text"><span id="capLabel">0% ocupado</span><span>Capacidade total: <span id="capTotal">10</span> leitos</span></div></div></div>
+<div class="form-group"><label>Críticos além da capacidade</label><input type="number" id="supCriticos" min="0"></div>
+<div class="form-group"><label>Aguardando internação</label><input type="number" id="supAguardando" min="0"></div>
+<div class="form-group"><label>Nº médicos presentes</label><input type="number" id="supNumMedicos" min="0"></div>
+<div class="full form-group"><label>Outros</label><input type="text" id="supOutros"></div>
+</div></div>
+<div class="form-section"><h4>Motivo da notificação</h4><div class="check-grid"><label><input type="checkbox" class="motivo"> Sala vermelha com vagas no gatilho</label><label><input type="checkbox" class="motivo"> 3+ pacientes com perfil de sala vermelha</label><label><input type="checkbox" class="motivo"> Paciente crítico sem local adequado</label><label><input type="checkbox" class="motivo"> Ausência de leito de internação</label><label><input type="checkbox" class="motivo"> Permanência prolongada no PA</label><label><input type="checkbox" class="motivo"> Ausência de equipamento/recurso</label><label><input type="checkbox" class="motivo"> Comprometimento de receber emergência</label><label><input type="checkbox" id="motivoOutroCheck" onchange="toggleField('motivoOutroTxt')"> Outros</label></div><div class="form-group" id="motivoOutroTxt" style="display:none;margin-top:6px"><input type="text" placeholder="Especifique o motivo"></div></div>
+<div class="form-section"><h4>Recurso / estrutura indisponível</h4><div class="check-grid"><label><input type="checkbox" class="recurso"> Leito de sala vermelha</label><label><input type="checkbox" class="recurso"> Leito de observação</label><label><input type="checkbox" class="recurso"> Monitorização</label><label><input type="checkbox" class="recurso"> Ventilador mecânico</label><label><input type="checkbox" class="recurso"> Equipamento / Material</label><label><input type="checkbox" class="recurso"> Recurso humano</label><label><input type="checkbox" id="recursoOutroCheck" onchange="toggleField('recursoOutroTxt')"> Outro</label></div><div class="form-group" id="recursoOutroTxt" style="display:none;margin-top:6px"><input type="text" placeholder="Especifique o recurso"></div></div>
+<div class="form-group"><label>Descrição objetiva (opcional)</label><textarea id="supDesc" rows="4"></textarea></div>
+<div class="form-group"><label>Anexos / fotos (máx. 3)</label><label class="file-label">Selecionar arquivos<input type="file" id="supAnexos" multiple accept="image/*,.pdf" onchange="handleAnexos(this)"></label><div class="file-chips" id="supAnexosList"></div></div>
+<div class="btn-bar"><button type="button" class="btn btn-outline" onclick="voltarPainel()">Cancelar</button><button type="button" class="btn btn-primary" onclick="saveSup()">Salvar registro</button></div></div>
+</div>
+</main>
+
+<div class="tela" id="telaLogin">
+<div class="login-card"><div class="logo-wrap logo-wrap-lg" style="justify-content:center"><img src="logo_hor.png" alt="HNSM"></div>
+<h2>Pronto Atendimento</h2>
+<div class="login-tabs"><div class="login-tab active" id="tabProf" onclick="switchLoginTab('prof')">Profissional</div><div class="login-tab" id="tabCoord" onclick="switchLoginTab('coord')">Coordenação</div></div>
+<div id="loginProf">
+<div class="form-group"><label>CRM <span class="req">*</span></label><input type="text" id="logCrm" maxlength="6" placeholder="5 ou 6 dígitos"></div>
+<div class="form-group"><label>Senha <span class="req">*</span></label><input type="password" id="logSenhaProf"></div>
+<div class="form-check"><input type="checkbox" onclick="toggleSenha('logSenhaProf')"><span>Mostrar senha</span></div>
+<button type="button" class="btn-entrar" onclick="loginProf()">Entrar</button>
+</div>
+<div id="loginCoord" style="display:none">
+<div class="form-group"><label>Usuário <span class="req">*</span></label><input type="text" id="logUser"></div>
+<div class="form-group"><label>Senha <span class="req">*</span></label><input type="password" id="logSenhaCoord"></div>
+<div class="form-check"><input type="checkbox" onclick="toggleSenha('logSenhaCoord')"><span>Mostrar senha</span></div>
+<button type="button" class="btn-entrar" onclick="loginCoord()">Entrar</button>
+</div>
+<a style="display:block;text-align:center;margin-top:10px;font-size:13px;color:var(--red);cursor:pointer" onclick="recuperarSenha()">Esqueci minha senha</a>
+</div>
+</div>
+
+<div class="tela" id="telaTrocarSenha">
+<div style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(135deg,#FAFAFA,#F5F5F5 40%,var(--red-light));padding:20px">
+<div class="login-card">
+<div class="logo-wrap logo-wrap-lg" style="justify-content:center"><img src="logo_hor.png" alt="HNSM"></div>
+<h2>Trocar Senha</h2>
+<p style="text-align:center;color:var(--gray);margin-bottom:18px;font-size:13px">Por segurança, troque sua senha no primeiro acesso.</p>
+<div class="form-group"><label>Nova senha <span class="req">*</span></label><input type="password" id="novaSenha" placeholder="Mínimo 6 caracteres"></div>
+<div class="form-group"><label>Confirmar senha <span class="req">*</span></label><input type="password" id="confirmaSenha"></div>
+<button type="button" class="btn-entrar" onclick="trocarSenha()">Trocar senha</button>
+</div>
+</div>
+</div>
+
+<div id="toast-container"></div><div id="modalContainer"></div><div id="shareContainer"></div><div id="regFullContainer"></div><div id="lightbox"></div>
+<script>
+var db=null,ss=null,ed=null,tSel='Nominal',anx={},LR=null,LFl='',LPr='',LC='',LQF='today';
+var ML=['Sala vermelha com vagas no gatilho','3+ pacientes com perfil de sala vermelha','Paciente crítico sem local adequado','Ausência de leito de internação','Permanência prolongada no PA','Ausência de equipamento/recurso','Comprometimento de receber emergência'];
+var RC=['Leito de sala vermelha','Leito de observação','Monitorização','Ventilador mecânico','Equipamento / Material','Recurso humano'];
+var NM=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+function $(i){return document.getElementById(i)}
+function gv(i){var e=$(i);return e?e.value:''}
+function hoje(){return new Date().toISOString().split('T')[0]}
+/* ============================================================
+   ⚙️ BANCO EM REDE (FIREBASE) — projeto hnsm-intercorrencias
+   ============================================================ */
+var FBCFG={apiKey:"AIzaSyCH9T6s5yORQbfBpwDVEpSlzfnp2IiMeKM",authDomain:"hnsm-intercorrencias.firebaseapp.com",databaseURL:"https://hnsm-intercorrencias-default-rtdb.firebaseio.com",projectId:"hnsm-intercorrencias",storageBucket:"hnsm-intercorrencias.firebasestorage.app",messagingSenderId:"532524635300",appId:"1:532524635300:web:60d2c6219b38975df78231"};
+var fb=null,fbOn=false,booted=false;
+try{if(typeof firebase!=='undefined'){firebase.initializeApp(FBCFG);fb=firebase.database()}}catch(e){fb=null}
+try{db=JSON.parse(localStorage.getItem('hnsm_db'));if(!db||!db.prof||!db.regs||!db.coord)db=null}catch(e){db=null}
+try{ss=JSON.parse(sessionStorage.getItem('hnsm_ss'))}catch(e){ss=null}
+function save(){
+try{localStorage.setItem('hnsm_db',JSON.stringify(db))}catch(e){toast('Memória do navegador cheia — a imagem pode não ter sido salva. Use menos fotos ou apague registros antigos.','error')}
+if(fb&&fbOn){try{fb.ref('hnsm').set(JSON.parse(JSON.stringify(db)))}catch(e){}}}
+/* BANCO LIMPO: nenhum registro, nenhum profissional de teste — apenas os acessos de coordenação */
+function seed(){
+db={prof:[],coord:[{nome:'Administrador',usr:'admin',mail:'admin@hnsm.org',senha:'admin123'},{nome:'Coordenação',usr:'hnsmpa',mail:'',senha:'hnsmpa1942'}],setores:['Sala Vermelha','Sala de Observação','Pronto Socorro','Pediatria','UTI','Enfermaria'],cap:{salaVermelha:2,observacao:3,medicacao:5,gatilhoSV:2},env:[],trg:{ativo:true,lim:150,mail:'coordenacao@hnsm.org'},tlog:[],regs:[]};
+save()}
+function migra(){
+if(!db.cap)db.cap={salaVermelha:2,observacao:3,medicacao:5,gatilhoSV:2};
+if(db.cap.gatilhoSV===undefined)db.cap.gatilhoSV=2;
+if(!db.coord||!db.coord.length)db.coord=[{nome:'Administrador',usr:'admin',mail:'admin@hnsm.org',senha:'admin123'},{nome:'Coordenação',usr:'hnsmpa',mail:'',senha:'hnsmpa1942'}];
+if(db.coord.every(function(c){return c.usr!=='hnsmpa'}))db.coord.push({nome:'Coordenação',usr:'hnsmpa',mail:'',senha:'hnsmpa1942'});
+if(!db.env)db.env=[];if(!db.trg)db.trg={ativo:true,lim:150,mail:''};if(!db.tlog)db.tlog=[];
+if(!db.prof)db.prof=[];if(!db.regs)db.regs=[];
+db.prof.forEach(function(p){if(p.ts===undefined)p.ts=false});
+db.regs.forEach(function(r){if(!Array.isArray(r.anexos))r.anexos=[]})}
+function refreshTela(){if(!ss)return;try{
+if(ss.tipo==='prof'){['profDash','profEnc','profInt','profSup','profRel'].forEach(function(s){if($(s).style.display==='block')nP(s)})}
+else{['coordDash','coordPend','coordHist','coordRel','coordMapa','coordCad'].forEach(function(s){if($(s).style.display==='block')nC(s)})}}catch(e){}}
+function boot(){booted=true;if(ss){if(ss.ts)showTela('telaTrocarSenha');else enter()}else showTela('telaLogin')}
+/* Escuta a nuvem em tempo real: salvou em um dispositivo, atualiza em todos */
+if(fb){
+fb.ref('hnsm').on('value',function(s){var v=s.val();fbOn=true;
+if(v){db=v;migra();if(!booted)boot();else refreshTela()}
+else{if(!db)seed();migra();save();if(!booted)boot()}},
+function(){fbOn=false;if(!booted){if(!db)seed();migra();save();boot()}})}
+else{if(!db)seed();migra();save();boot()}
+(function(){var t=document.createElement('div');t.id='dayTip';t.className='day-tip';document.body.appendChild(t)})();
+function nid(){return db.regs.length?Math.max.apply(null,db.regs.map(function(r){return r.id||0}))+1:1}
+function fmt(d){if(!d)return'';var p=d.split('-');return p.length===3?p[2]+'/'+p[1]+'/'+p[0]:d}
+function tL(t){return{enc:'Encaminhamento',int:'Intercorrência',sup:'Superlotação'}[t]||t}
+function tC(t){return{enc:'type-enc',int:'type-int',sup:'type-sup'}[t]||'type-enc'}
+function gNP(c){var p=db.prof.filter(function(x){return x.crm===c})[0];return p?p.nome:'—'}
+function recs(){return db.regs.slice().sort(function(a,b){return(b.data+'').localeCompare(a.data+'')||(b.dc+'').localeCompare(a.dc+'')})}
+function tP(r){if(r.tipo!=='sup'||!r.sit)return 0;var n=function(v){return parseInt(v)||0};return n(r.sit.salaVermelha)+n(r.sit.observacao)+n(r.sit.medicacao)+n(r.sit.outrosPac)}
+function capT(){return(db.cap.salaVermelha||0)+(db.cap.observacao||0)+(db.cap.medicacao||0)}
+function occ(r){if(r.tipo!=='sup'||!r.sit)return 0;var c=capT();return c?Math.round(tP(r)/c*100):0}
+function gSV(){return db.cap&&db.cap.gatilhoSV?db.cap.gatilhoSV:2}
+function svC(r){return r.tipo==='sup'&&r.sit&&(parseInt(r.sit.salaVermelha)||0)>=gSV()}
+function anon(r){return r.tipo==='int'&&r.tp==='Anônimo'}
+function getR(id){return db.regs.filter(function(x){return x.id===id})[0]}
+/* ===== IMAGENS: contagem, miniaturas e pop-up ===== */
+function imgOf(r){return((r.anexos||[]).filter(function(a){return a&&a.tipo==='img'&&a.dado}))}
+function nImg(r){return imgOf(r).length}
+function photoTag(r){return nImg(r)?' <span class="meta-tag photo-tag">📷 '+nImg(r)+' foto'+(nImg(r)>1?'s':'')+'</span>':''}
+function thumbsHTML(r){var im=imgOf(r);if(!im.length)return'';var h='<div class="card-thumbs" onclick="event.stopPropagation()">';
+im.slice(0,3).forEach(function(a){h+='<img src="'+a.dado+'" alt="" onclick="openLightbox(\''+a.dado+'\',\''+(a.nome||'').replace(/'/g,'')+'\')">'});
+if(im.length>3)h+='<span class="meta-tag">+'+(im.length-3)+'</span>';
+return h+'</div>'}
+function openLightbox(src,name){$('lightbox').innerHTML='<div class="lb-overlay" onclick="if(event.target===this)this.innerHTML=\'\'"><div class="lb-box"><img src="'+src+'" alt=""><div class="lb-name">'+(name||'')+'</div><button type="button" class="lb-close" onclick="document.getElementById(\'lightbox\').innerHTML=\'\'">Fechar</button></div></div>'}
+function openLightboxSel(id,i){var a=(anx[id]||[])[i];if(a&&a.dado)openLightbox(a.dado,a.nome)}
+function handleAnexos(input){var files=Array.prototype.slice.call(input.files,0,3);anx[input.id]=[];var l=$(input.id+'List'),pend=files.length;if(!pend){renderChips(input.id);return}
+files.forEach(function(f){var rd=new FileReader();
+rd.onload=function(ev){
+if(f.type&&f.type.indexOf('image')===0){
+var img=new Image();
+img.onload=function(){var mx=640,w=img.width,h=img.height;if(w>mx){h=Math.round(h*mx/w);w=mx}if(h>mx){w=Math.round(w*mx/h);h=mx}
+var cv=document.createElement('canvas');cv.width=w;cv.height=h;cv.getContext('2d').drawImage(img,0,0,w,h);
+anx[input.id].push({nome:f.name,tipo:'img',dado:cv.toDataURL('image/jpeg',0.65)});if(--pend===0)renderChips(input.id)};
+img.onerror=function(){anx[input.id].push({nome:f.name,tipo:'arq',dado:''});if(--pend===0)renderChips(input.id)};
+img.src=ev.target.result;
+}else{
+if(f.size<=1200000){anx[input.id].push({nome:f.name,tipo:'pdf',dado:ev.target.result})}else{anx[input.id].push({nome:f.name,tipo:'arq',dado:''})}
+if(--pend===0)renderChips(input.id)}};
+rd.readAsDataURL(f)})}
+function renderChips(id){var l=$(id+'List');if(!l)return;var a=anx[id]||[],h='';
+a.forEach(function(x,i){
+if(x&&x.tipo==='img'){h+='<span class="anx-chip" onclick="openLightboxSel(\''+id+'\','+i+')"><img src="'+x.dado+'" alt=""><span>'+x.nome+'</span></span>'}
+else if(x&&x.tipo==='pdf'){h+='<span class="anx-chip anx-doc">📄 '+x.nome+' <small>(anexado)</small></span>'}
+else{h+='<span class="anx-chip anx-doc">📎 '+((x&&x.nome)||x)+'</span>'}});
+if(a.some(function(x){return !x||x.tipo==='arq'}))h+='<div style="font-size:11px;color:var(--gray);margin-top:3px">Arquivo muito grande — registrado apenas o nome.</div>';
+l.innerHTML=h}
+function toast(m,t){var e=document.createElement('div');e.className='toast '+(t||'success');e.textContent=m;$('toast-container').appendChild(e);setTimeout(function(){e.remove()},2600)}
+function mShow(t,m,fn,ok){var c=$('modalContainer');c.innerHTML='<div class="modal-overlay" onclick="if(event.target===this)this.remove()"><div class="modal-box"><h3>'+t+'</h3><p>'+m+'</p><div class="modal-actions"><button type="button" class="btn btn-outline" onclick="document.getElementById(\'modalContainer\').innerHTML=\'\'">Cancelar</button><button type="button" class="btn '+(ok===false?'btn-primary':'btn-danger')+'" id="mk">Confirmar</button></div></div></div>';$('mk').onclick=function(){c.innerHTML='';fn()}}
+function mInfo(t,m){var c=$('modalContainer');c.innerHTML='<div class="modal-overlay" onclick="if(event.target===this)this.remove()"><div class="modal-box"><h3>'+t+'</h3><p>'+m+'</p><div class="modal-actions"><button type="button" class="btn btn-primary" onclick="document.getElementById(\'modalContainer\').innerHTML=\'\'">OK</button></div></div></div>'}
+function mAsk(t,m,btns){var c=$('modalContainer'),h='<div class="modal-overlay" onclick="if(event.target===this)this.remove()"><div class="modal-box"><h3>'+t+'</h3><p>'+m+'</p><div class="ask-img-actions">';btns.forEach(function(b,i){h+='<button type="button" class="btn '+(b.cls||'btn-outline')+'" id="mk'+i+'">'+b.l+'</button>'});h+='</div></div></div>';c.innerHTML=h;btns.forEach(function(b,i){$('mk'+i).onclick=function(){c.innerHTML='';b.fn()}})}
+function toggleSidebar(){$('sidebar').classList.toggle('show');$('sidebarBackdrop').classList.toggle('show')}
+function showTela(id){document.querySelectorAll('.tela').forEach(function(t){t.classList.remove('ativa')});$(id).classList.add('ativa');window.scrollTo(0,0);
+if(id==='telaFormEnc'){$('encData').value=hoje()}
+if(id==='telaFormInt'){$('intData').value=hoje();popSetor('');$('intAnonHint').style.display='none'}
+if(id==='telaFormSup'){$('supData').value=hoje();capBar()}}
+function switchLoginTab(t){$('tabProf').classList.toggle('active',t==='prof');$('tabCoord').classList.toggle('active',t==='coord');$('loginProf').style.display=t==='prof'?'block':'none';$('loginCoord').style.display=t==='coord'?'block':'none'}
+function toggleSenha(id){var e=$(id);e.type=e.type==='password'?'text':'password'}
+function loginProf(){var c=gv('logCrm').trim(),s=gv('logSenhaProf'),p=db.prof.filter(function(x){return x.crm===c&&x.senha===s})[0];if(!p){toast('CRM ou senha incorretos. Se ainda não há profissionais cadastrados, a coordenação deve cadastrá-los em Cadastros → Profissionais.','error');return}ss={tipo:'prof',crm:p.crm,nome:p.nome,ts:p.ts};try{sessionStorage.setItem('hnsm_ss',JSON.stringify(ss))}catch(e){}if(p.ts)showTela('telaTrocarSenha');else enter()}
+function loginCoord(){var u=gv('logUser').trim(),s=gv('logSenhaCoord'),c=db.coord.filter(function(x){return x.usr===u&&x.senha===s})[0];if(!c){toast('Usuário ou senha incorretos','error');return}ss={tipo:'coord',usr:c.usr,nome:c.nome};try{sessionStorage.setItem('hnsm_ss',JSON.stringify(ss))}catch(e){}enter()}
+function trocarSenha(){var n=gv('novaSenha'),c=gv('confirmaSenha');if(n.length<6){toast('Senha mínima de 6 caracteres','error');return}if(n!==c){toast('Senhas não conferem','error');return}db.prof.forEach(function(p){if(p.crm===ss.crm){p.senha=n;p.ts=false}});save();ss.ts=false;try{sessionStorage.setItem('hnsm_ss',JSON.stringify(ss))}catch(e){}toast('Senha alterada');enter()}
+function recuperarSenha(){mInfo('Recuperação de senha','Contate a coordenação para resetar sua senha para o CRM.<br><br>Caminho: <b>Cadastros → Profissionais → Resetar senha</b>')}
+function logout(){try{sessionStorage.removeItem('hnsm_ss')}catch(e){}ss=null;location.reload()}
+function enter(){['telaLogin','telaTrocarSenha'].forEach(function(t){$(t).classList.remove('ativa')});$('appHeader').style.display='flex';$('mainArea').style.display='block';$('sidebar').style.display='block';
+$('userInfo').innerHTML='<div class="user-badge"><b>'+ss.nome+'</b> <span class="role-pill '+(ss.tipo==='prof'?'role-prof">Profissional':'role-coord">Coordenação')+'</span></div><button type="button" class="btn-sair" onclick="logout()">Sair</button>';
+if(ss.tipo==='prof')setupP();else setupC()}
+function bNav(items,act){var sb='<div class="sb-header"><img src="logo_hor.png" alt="HNSM"></div><div class="sb-label">Menu</div>';items.forEach(function(it){sb+='<div class="nav-item" data-n="'+it.id+'" onclick="'+act+'(\''+it.id+'\')"><span style="flex:1">'+it.l+'</span>'+(it.b?'<span class="nav-badge">'+it.b+'</span>':'')+'</div>'});$('sidebar').innerHTML=sb;var bn='';items.forEach(function(it){bn+='<div class="bn-item" onclick="'+act+'(\''+it.id+'\')"><span>'+it.l+'</span></div>'});$('bottomNav').innerHTML=bn}
+function navAt(id){document.querySelectorAll('.nav-item').forEach(function(n){n.classList.toggle('active',n.getAttribute('data-n')===id)})}
+function setupP(){bNav([{id:'profDash',l:'Início'},{id:'profEnc',l:'Encaminhamentos'},{id:'profInt',l:'Intercorrências'},{id:'profSup',l:'Superlotação'},{id:'profRel',l:'Relatórios'}],'nP');showTela('telaPainelProf');nP('profDash')}
+function nP(id){['profDash','profEnc','profInt','profSup','profRel'].forEach(function(s){$(s).style.display='none'});$(id).style.display='block';navAt(id);if(id==='profDash')dashP();if(id==='profEnc')rLst('listaEnc','enc');if(id==='profInt')rLst('listaInt','int');if(id==='profSup')rLst('listaSup','sup');if(id==='profRel')gerarRelatorio('prof')}
+function dashP(){$('dashProfNome').textContent='Olá, '+ss.nome.split(' ').slice(0,2).join(' ');
+$('dashProfShortcuts').innerHTML='<div class="dash-shortcut" onclick="showTela(\'telaFormEnc\')"><div class="ds-icon red">+</div><div class="ds-label">Novo Encaminhamento</div></div><div class="dash-shortcut" onclick="showTela(\'telaFormInt\')"><div class="ds-icon yellow">+</div><div class="ds-label">Nova Intercorrência</div></div><div class="dash-shortcut" onclick="showTela(\'telaFormSup\')"><div class="ds-icon red">+</div><div class="ds-label">Nova Superlotação</div></div>';
+var m=recs().filter(function(r){return r.by===ss.crm}).slice(0,5);$('dashProfRecentes').innerHTML=m.length?m.map(function(r){return card(r,false,true)}).join(''):'<div class="empty"><p>Nenhum registro recente</p></div>'}
+function setupC(){var pc=db.regs.filter(function(r){return r.status==='pendente'}).length;bNav([{id:'coordDash',l:'Início'},{id:'coordPend',l:'Pendentes',b:pc},{id:'coordHist',l:'Histórico'},{id:'coordRel',l:'Relatórios'},{id:'coordMapa',l:'Ind. Superlotação'},{id:'coordCad',l:'Cadastros'}],'nC');showTela('telaPainelCoord');nC('coordDash');rSet();rProfs();rEnv();trgCfg();trgLog();envSet();ldCap();pAnos();$('mapaFilterMes').value=new Date().getMonth()}
+function nC(id){['coordDash','coordPend','coordHist','coordRel','coordMapa','coordCad'].forEach(function(s){$(s).style.display='none'});$(id).style.display='block';navAt(id);if(id==='coordDash')dashC();if(id==='coordPend')rPend();if(id==='coordHist')renderHist();if(id==='coordRel')gerarRelatorio('coord');if(id==='coordMapa')renderMapa()}
+function dashC(){$('dashCoordNome').textContent='Olá, '+ss.nome;var pc=db.regs.filter(function(r){return r.status==='pendente'}).length;
+$('dashCoordShortcuts').innerHTML='<div class="dash-shortcut" onclick="nC(\'coordPend\')"><div class="ds-icon red">🔔</div><div class="ds-label">Pendentes</div><div class="ds-count">'+pc+' notificação(ões)</div></div><div class="dash-shortcut" onclick="nC(\'coordHist\')"><div class="ds-icon yellow">🕘</div><div class="ds-label">Histórico</div><div class="ds-count">'+db.regs.length+' registro(s)</div></div><div class="dash-shortcut" onclick="nC(\'coordRel\')"><div class="ds-icon gold">📊</div><div class="ds-label">Relatórios</div><div class="ds-count">Gerar e imprimir</div></div><div class="dash-shortcut" onclick="nC(\'coordMapa\')"><div class="ds-icon red">🗺️</div><div class="ds-label">Ind. Superlotação</div><div class="ds-count">Calendário e ano</div></div><div class="dash-shortcut" onclick="nC(\'coordCad\')"><div class="ds-icon gold">⚙️</div><div class="ds-label">Cadastros</div><div class="ds-count">Gerenciar</div></div>';
+var p=recs().filter(function(r){return r.status==='pendente'}).slice(0,5);$('dashCoordPendentes').innerHTML=p.length?p.map(function(r){return card(r,true,false)}).join(''):'<div class="empty"><p>Nenhuma notificação pendente</p></div>'}
+function navCad(id){document.querySelectorAll('.cad-tab').forEach(function(t){t.classList.remove('active')});document.querySelectorAll('.cad-content').forEach(function(c){c.classList.remove('active')});document.querySelectorAll('.cad-tab')[{cadCap:0,cadTrigger:1,cadProf:2,cadCoord:3,cadSetor:4,cadEnv:5}[id]].classList.add('active');$(id).classList.add('active')}
+function voltarPainel(){ed=null;anx={};$('regFullContainer').innerHTML='';showTela(ss.tipo==='prof'?'telaPainelProf':'telaPainelCoord')}
+function card(r,ci,mod){var tc=anon(r)?'type-anon':tC(r.tipo),tit,mt,ds;
+if(r.tipo==='enc'){tit=r.paciente||'—';mt='<span class="meta-tag">'+fmt(r.data)+'</span><span class="meta-tag">'+r.turno+'</span><span class="meta-tag">Origem: '+(r.origem||'—')+'</span>';ds='<strong>Caso:</strong> '+(r.caso||'—')}
+else if(r.tipo==='int'){tit=r.paciente||'Registro Anônimo';mt='<span class="meta-tag">'+fmt(r.data)+'</span><span class="meta-tag">'+r.turno+'</span><span class="meta-tag">Setor: '+(r.setor||'—')+'</span>';ds=r.desc||'—'}
+else{tit='Superlotação — '+fmt(r.data);var pc=occ(r),o=pc>=150?'occ-red':pc>=100?'occ-yellow':'occ-green';mt='<span class="meta-tag">'+r.turno+'</span><span class="meta-tag '+o+'">'+pc+'% ocupação</span>';if(svC(r))mt+='<span class="meta-tag sv-alert">Sala Vermelha: '+r.sit.salaVermelha+'</span>';ds=r.desc||'—'}
+mt+=photoTag(r);
+var sl=r.status==='pendente'?'<span class="selo selo-pendente">Aguardando ciência</span>':'<span class="selo selo-ciente">Ciente</span>';
+var dc=anon(r)?'<span class="meta-tag" style="background:#EEE;color:#555">Anônimo</span>':'<span class="meta-tag doc-tag">Dr(a): '+gNP(r.by)+'</span>';
+var ac='<button type="button" class="btn btn-sm btn-ghost" onclick="event.stopPropagation();shRg('+r.id+')">Compartilhar</button><button type="button" class="btn btn-sm btn-outline" onclick="event.stopPropagation();impRg('+r.id+')">Imprimir</button>';
+if(!anon(r)&&mod)ac+='<button type="button" class="btn btn-sm btn-outline-red" onclick="event.stopPropagation();edRg('+r.id+')">Editar</button><button type="button" class="btn btn-sm btn-danger" onclick="event.stopPropagation();exRg('+r.id+')">Excluir</button>';
+if(ci&&r.status==='pendente')ac='<button type="button" class="btn btn-sm btn-green" onclick="event.stopPropagation();cie('+r.id+')">Dar ciência</button>'+ac;
+return'<div class="registro" onclick="verRg('+r.id+')"><div class="reg-top"><div><span class="type-badge '+tc+'">'+tL(r.tipo)+'</span><h3 style="margin-top:4px">'+tit+'</h3></div>'+sl+'</div><div class="reg-meta">'+mt+' '+dc+'</div><div class="reg-desc">'+ds+'</div>'+thumbsHTML(r)+'<div class="reg-actions" onclick="event.stopPropagation()">'+ac+'</div></div>'}
+function conteudo(r){var au=anon(r)?'<p><b>Autor:</b> Anônimo (não divulgado)</p>':'<p><b>Registrado por:</b> '+gNP(r.by)+'</p>';
+var ph=nImg(r)?'<p><b>Fotos:</b> '+nImg(r)+' foto(s) anexada(s)</p>':'';
+if(r.tipo==='enc')return'<h2>Encaminhamento Indevido</h2><p><b>Paciente:</b> '+(r.paciente||'—')+'</p><p><b>Data:</b> '+fmt(r.data)+' — '+r.turno+'</p><p><b>Origem:</b> '+(r.origem||'—')+' — '+(r.municipio||'—')+'</p><p><b>Caso:</b> '+(r.caso||'—')+'</p><p><b>Orientações:</b> '+(r.orientacoes||'—')+'</p><p><b>Condutas:</b> '+(r.condutas||'—')+'</p>'+au+ph;
+if(r.tipo==='int')return'<h2>Intercorrência</h2><p><b>Tipo:</b> '+r.tp+'</p>'+(r.paciente?'<p><b>Paciente:</b> '+r.paciente+'</p>':'')+'<p><b>Data:</b> '+fmt(r.data)+' — '+r.turno+'</p><p><b>Setor:</b> '+(r.setor||'—')+'</p><p><b>Descrição:</b> '+(r.desc||'—')+'</p>'+au+ph;
+var pc=occ(r);return'<h2>Superlotação</h2><p><b>Data:</b> '+fmt(r.data)+' — '+r.turno+'</p><p><b>Ocupação geral:</b> '+pc+'%</p>'+(svC(r)?'<p><b>⚠ ALERTA:</b> Sala Vermelha com '+r.sit.salaVermelha+' pacientes (gatilho: '+gSV()+')</p>':'')+'<p><b>Leitos (SV/Obs/Med/Outros):</b> '+(r.sit.salaVermelha||'0')+' / '+(r.sit.observacao||'0')+' / '+(r.sit.medicacao||'0')+' / '+(r.sit.outrosPac||'0')+'</p><p><b>Motivos:</b> '+((r.motivos||[]).join(', ')||'—')+'</p>'+au+ph}
+function plain(c){return c.replace(/<h2[^>]*>/g,'\n■ ').replace(/<\/h2>/g,'\n').replace(/<\/p>/g,'\n').replace(/<[^>]*>/g,'').replace(/\n{2,}/g,'\n').trim()}
+function shMenu(c,t){$('shareContainer').innerHTML='<div class="share-menu" onclick="if(event.target===this)this.remove()"><div class="share-box"><h3>'+t+'</h3><div class="share-grid"><button type="button" class="share-btn" onclick="shMail(\''+encodeURIComponent(c)+'\')">📧<span>E-mail</span></button><button type="button" class="share-btn" onclick="shWpp(\''+encodeURIComponent(c)+'\')">💬<span>WhatsApp</span></button><button type="button" class="share-btn" onclick="shPrn(\''+encodeURIComponent(c)+'\')">📄<span>Salvar PDF</span></button><button type="button" class="share-btn" onclick="shPrn(\''+encodeURIComponent(c)+'\')">🖨️<span>Imprimir</span></button></div><button type="button" class="btn btn-outline btn-block" onclick="document.getElementById(\'shareContainer\').innerHTML=\'\'">Fechar</button></div></div>'}
+function shMail(e){window.location.href='mailto:?subject='+encodeURIComponent('HNSM — Pronto Atendimento')+'&body='+encodeURIComponent(plain(decodeURIComponent(e)).substring(0,900))}
+function shWpp(e){window.open('https://wa.me/?text='+encodeURIComponent(plain(decodeURIComponent(e)).substring(0,900)),'_blank')}
+function shPrn(e){var c=decodeURIComponent(e),w=window.open('','_blank');w.document.write('<html><head><title>HNSM</title><style>body{font-family:Arial;padding:28px;color:#333}h1{color:#C8102E;border-bottom:2px solid #C8102E;padding-bottom:8px;font-size:17px}h2{font-size:14px}p{margin:4px 0}</style></head><body><h1>Hospital de Nossa Senhora das Mercês — Pronto Atendimento</h1>'+c+'</body></html>');w.document.close();setTimeout(function(){w.print()},300)}
+function shRg(id){var r=getR(id);if(r)shMenu(conteudo(r),'Compartilhar registro')}
+function verRg(id){var r=getR(id);if(!r)return;var a=anon(r),h='<div class="reg-full-overlay" onclick="if(event.target===this)this.remove()"><div class="reg-full-box"><div class="rf-header"><div><h2>';
+if(r.tipo==='enc')h+=r.paciente||'—';else if(r.tipo==='int')h+=r.paciente||'Registro Anônimo';else h+='Superlotação — '+fmt(r.data);
+h+='</h2><div class="rf-type"><span class="type-badge '+(a?'type-anon':tC(r.tipo))+'">'+tL(r.tipo)+'</span>'+(a?' <span class="type-badge type-anon">Autor anônimo</span>':'')+photoTag(r)+'</div></div><span class="rf-close" onclick="document.getElementById(\'regFullContainer\').innerHTML=\'\'">✕</span></div><div class="rf-status">'+(r.status==='pendente'?'<span class="selo selo-pendente">Aguardando ciência</span>':'<span class="selo selo-ciente">Ciente</span>')+'</div>';
+h+=a?'<div style="margin-bottom:10px"><span class="meta-tag" style="background:#EEE;color:#555">Registro anônimo — o autor não é divulgado, nem para a coordenação</span></div>':'<div style="margin-bottom:10px"><span class="meta-tag doc-tag">Registrado por: '+gNP(r.by)+'</span></div>';
+h+='<div class="rf-detail">';
+function F(l,v){h+='<div class="rf-field"><span class="rf-label">'+l+'</span><span class="rf-value">'+(v||'—')+'</span></div>'}
+F('Data',fmt(r.data)+' — '+r.turno);
+if(r.tipo==='enc'){F('Origem',(r.origem||'—')+' | '+(r.municipio||'—')+' | '+(r.hospital||'—'));F('Quem encaminhou',r.medico);F('Caso do paciente',r.caso);F('Orientações',r.orientacoes);F('Condutas',r.condutas)}
+else if(r.tipo==='int'){F('Tipo de registro',r.tp);F('Paciente',r.paciente||'Não informado');F('Profissionais envolvidos',r.profs||'—');F('Setor',r.setor);F('Descrição',r.desc)}
+else{var pc=occ(r);F('Médicos plantonistas',r.medicos);F('Ocupação geral',pc+'%');if(svC(r))F('⚠ Alerta Sala Vermelha','<span style="color:#C8102E;font-weight:700">'+r.sit.salaVermelha+' pacientes (gatilho: '+gSV()+')</span>');F('Leitos (SV/Obs/Med/Outros)',(r.sit.salaVermelha||'0')+' / '+(r.sit.observacao||'0')+' / '+(r.sit.medicacao||'0')+' / '+(r.sit.outrosPac||'0'));F('Críticos / Aguardando',(r.sit.criticos||'0')+' / '+(r.sit.aguardando||'0'));F('Motivos',(r.motivos||[]).join(', '));F('Recursos indisponíveis',(r.recursos||[]).join(', '));F('Descrição',r.desc)}
+F('Fotos',nImg(r)?nImg(r)+' foto(s)':'—');
+h+='</div>';
+var im=imgOf(r);if(im.length){h+='<h4 style="font-size:13px;margin:12px 0 8px">📷 Fotos do registro <span style="font-size:11px;color:var(--gray);font-weight:400">(clique para ampliar)</span></h4><div class="rf-gallery">';
+im.forEach(function(a){h+='<div class="rf-thumb" onclick="openLightbox(\''+a.dado+'\',\''+(a.nome||'').replace(/'/g,'')+'\')"><img src="'+a.dado+'" alt=""></div>'});
+h+='</div>'}
+var pds=(r.anexos||[]).filter(function(a){return a&&a.tipo==='pdf'&&a.dado});if(pds.length){h+='<div style="margin-top:8px">';pds.forEach(function(a){h+='<a href="'+a.dado+'" download="'+a.nome+'" style="font-size:12px;margin-right:10px">📄 '+a.nome+'</a>'});h+='</div>'}
+h+='<div class="rf-actions">';
+if(ss.tipo==='coord'&&r.status==='pendente')h+='<button type="button" class="btn btn-green" onclick="document.getElementById(\'regFullContainer\').innerHTML=\'\';cie('+r.id+')">✓ Dar ciência</button>';
+h+='<button type="button" class="btn btn-outline" onclick="impRg('+r.id+')">Imprimir</button><button type="button" class="btn btn-ghost" onclick="shRg('+r.id+')">Compartilhar</button>';
+if(!a&&r.by===ss.crm)h+='<button type="button" class="btn btn-outline-red" onclick="document.getElementById(\'regFullContainer\').innerHTML=\'\';edRg('+r.id+')">Editar</button><button type="button" class="btn btn-danger" onclick="document.getElementById(\'regFullContainer\').innerHTML=\'\';exRg('+r.id+')">Excluir</button>';
+h+='</div></div></div>';$('regFullContainer').innerHTML=h}
+function rLst(c,t){var l=recs().filter(function(r){return r.tipo===t&&r.by===ss.crm});$(c).innerHTML=l.length?l.map(function(r){return card(r,false,true)}).join(''):'<div class="empty"><p>Nenhum registro encontrado</p></div>'}
+function rPend(){var l=recs().filter(function(r){return r.status==='pendente'});$('listaPend').innerHTML=l.length?l.map(function(r){return card(r,true,false)}).join(''):'<div class="empty"><p>Nenhuma notificação pendente</p></div>'}
+function busca(r,q){q=q.toLowerCase().trim();if(!q)return true;
+return[(r.paciente||''),(r.desc||''),(r.medicos||''),(r.caso||''),(r.setor||''),(r.origem||''),(r.municipio||''),(r.hospital||''),(r.medico||''),(r.orientacoes||''),(r.condutas||''),(r.turno||''),(r.status||''),(r.tp||''),(r.profs||''),(nImg(r)?'com foto fotos imagem':''),anon(r)?'anonimo anônimo':gNP(r.by),fmt(r.data||'')].join(' ').toLowerCase().indexOf(q)!==-1}
+function renderHist(){var s=gv('histSearch'),t=gv('histTipo'),tu=gv('histTurno'),de=gv('histDe'),at=gv('histAte'),l=recs();
+if(s)l=l.filter(function(r){return busca(r,s)});
+if(t)l=l.filter(function(r){return r.tipo===t});if(tu)l=l.filter(function(r){return r.turno===tu});if(de)l=l.filter(function(r){return r.data>=de});if(at)l=l.filter(function(r){return r.data<=at});
+$('listaHist').innerHTML=l.length?'<div class="report-summary">'+l.length+' registro(s) encontrado(s)</div>'+l.map(function(r){return card(r,true,false)}).join(''):'<div class="empty"><p>Nenhum registro encontrado</p></div>'}
+function setHistFilter(p,b){var td=new Date(),de=$('histDe'),at=$('histAte');if(p==='today'){de.value=td.toISOString().split('T')[0];at.value=de.value}else if(p==='week'){var w=new Date(td);w.setDate(w.getDate()-7);de.value=w.toISOString().split('T')[0];at.value=td.toISOString().split('T')[0]}else if(p==='month'){de.value=new Date(td.getFullYear(),td.getMonth(),1).toISOString().split('T')[0];at.value=td.toISOString().split('T')[0]}else if(p==='year'){de.value=new Date(td.getFullYear(),0,1).toISOString().split('T')[0];at.value=td.toISOString().split('T')[0]}else{de.value='';at.value=''}
+b.parentElement.querySelectorAll('.chip').forEach(function(c){c.classList.remove('active')});b.classList.add('active');renderHist()}
+function setQuickFilter(p,pre,b){LQF=p;var td=new Date(),de=$('relDe'+pre),at=$('relAte'+pre);if(p==='today'){de.value=td.toISOString().split('T')[0];at.value=de.value}else if(p==='week'){var w=new Date(td);w.setDate(w.getDate()-7);de.value=w.toISOString().split('T')[0];at.value=td.toISOString().split('T')[0]}else if(p==='month'){de.value=new Date(td.getFullYear(),td.getMonth(),1).toISOString().split('T')[0];at.value=td.toISOString().split('T')[0]}else if(p==='year'){de.value=new Date(td.getFullYear(),0,1).toISOString().split('T')[0];at.value=td.toISOString().split('T')[0]}else{de.value='';at.value=''}
+b.parentElement.querySelectorAll('.chip').forEach(function(c){c.classList.remove('active')});b.classList.add('active');gerarRelatorio(pre==='Prof'?'prof':'coord')}
+function cie(id){mShow('Dar ciência','Confirma dar ciência a esta notificação?',function(){var r=getR(id);if(r)r.status='ciente';save();rPend();renderHist();dashC();toast('Ciência registrada')},false)}
+function exRg(id){mShow('Excluir','Tem certeza? Esta ação não pode ser desfeita.',function(){db.regs=db.regs.filter(function(r){return r.id!==id});save();rLst('listaEnc','enc');rLst('listaInt','int');rLst('listaSup','sup');rPend();renderHist();toast('Registro excluído','info')})}
+function pRow(n,e){return'<div class="prof-dyn"><input type="text" placeholder="Nome" value="'+(n||'')+'" data-pn><input type="text" placeholder="Especialidade" value="'+(e||'')+'" data-pe><button type="button" class="prof-remove" onclick="this.parentElement.remove()">✕</button></div>'}
+function addProfField(){$('encProfs').insertAdjacentHTML('beforeend',pRow('',''))}
+function popSetor(sel){var s=$('intSetor'),o='';db.setores.forEach(function(x){o+='<option value="'+x+'"'+(x===sel?' selected':'')+'>'+x+'</option>'});o+='<option value="Outro"'+(sel==='Outro'?' selected':'')+'>Outro</option>';s.innerHTML=o;$('intOutroSetorGroup').style.display=s.value==='Outro'?'block':'none'}
+function selectTipoInt(t){tSel=t;$('rtNominal').className=t==='Nominal'?'ativo':'';$('rtAnonimo').className=t==='Anônimo'?'ativo':'';$('intAnonHint').style.display=t==='Anônimo'?'block':'none';$('intPacienteLabel').innerHTML=t==='Anônimo'?'Nome do paciente <span style="font-size:11px;color:var(--gray)">(opcional)</span>':'Nome do paciente';$('intPaciente').placeholder=t==='Anônimo'?'Deixe em branco se preferir não informar':''}
+function toggleField(id){var e=$(id);e.style.display=e.style.display==='none'?'block':'none'}
+function capBar(){var c=db.cap,tc=capT();if(!tc)return;var sv=parseInt(gv('supSalaVermelha'))||0,g=gSV(),tot=sv+(parseInt(gv('supObservacao'))||0)+(parseInt(gv('supMedicacao'))||0)+(parseInt(gv('supOutrosPac'))||0),pc=Math.round(tot/tc*100),b=$('capBar');if(!b)return;
+b.style.width=Math.min(pc,100)+'%';b.style.background=pc>=150?'#C8102E':pc>=100?'#F59E0B':'#059669';
+$('totalPacientes').textContent=tot;$('capLabel').textContent=pc+'% ocupado ('+tot+' de '+tc+' leitos)';$('capTotal').textContent=tc;$('lblCapSV').textContent=c.salaVermelha||0;$('lblCapObs').textContent=c.observacao||0;$('lblCapMed').textContent=c.medicacao||0;
+var bt=$('alertBanner'),tx=$('alertBannerText');if(!bt)return;var th=db.trg?db.trg.lim:150;
+if(sv>=g&&pc>=th){bt.className='alert-banner show';tx.textContent='ALERTA DUPLO: Sala Vermelha com '+sv+' pacientes (gatilho: '+g+') E ocupação geral em '+pc+'% — acima do limite de '+th+'%'}
+else if(sv>=g){bt.className='alert-banner show';tx.textContent='ALERTA SALA VERMELHA: '+sv+' pacientes ocupados (gatilho configurado: '+g+' ou mais caracteriza superlotação). Será notificado ao salvar.'}
+else if(pc>=th){bt.className='alert-banner show ab-yellow';tx.textContent='ALERTA GERAL: ocupação em '+pc+'% — acima do limite de '+th+'%. Será notificado ao salvar.'}else bt.className='alert-banner'}
+function trigg(r){if(r.tipo!=='sup')return;var sv=parseInt(r.sit.salaVermelha)||0,pc=occ(r),t=db.trg||{ativo:true,lim:150},g=gSV();if(t.ativo&&(sv>=g||pc>=t.lim)){toast('Superlotação confirmada: '+(sv>=g?'Sala Vermelha com '+sv+' pacientes (gatilho: '+g+')':'Ocupação geral em '+pc+'%')+'. Registrada no indicador.','info');db.tlog.unshift({data:new Date().toISOString(),rid:r.id,pct:pc,tp:sv>=g?'sala_vermelha':'geral'});save();trgLog()}}
+function chkSess(){if(!ss){toast('Sessão expirada. Faça login novamente.','error');showTela('telaLogin');return false}if(!ss.crm){toast('Sessão inválida. Faça login novamente.','error');return false}return true}
+function putR(r){if(ed){var o=getR(ed);if(o)r.status=o.status;db.regs=db.regs.filter(function(x){return x.id!==ed})}db.regs.push(r);save();ed=null;anx={};voltarPainel()}
+function saveEnc(){if(!chkSess())return;var p=gv('encPaciente').trim(),d=gv('encData');if(!p||!d){toast('Preencha os campos obrigatórios: paciente e data','error');return}try{var pr=[];document.querySelectorAll('#encProfs .prof-dyn').forEach(function(row){var n=row.querySelector('[data-pn]').value;if(n)pr.push({nome:n,esp:row.querySelector('[data-pe]').value})});
+var r={id:ed||nid(),tipo:'enc',paciente:p,data:d,turno:gv('encTurno')||'Diurno',profs:pr,origem:gv('encOrigem'),municipio:gv('encMunicipio'),hospital:gv('encHospital'),medico:gv('encMedico'),caso:gv('encCaso'),orientacoes:gv('encOrientacoes'),condutas:gv('encCondutas'),anexos:anx.encAnexos||[],status:'pendente',by:ss.crm,dc:hoje()};
+putR(r);toast('Encaminhamento registrado com sucesso'+(nImg(r)?' — '+nImg(r)+' foto(s) anexada(s)':''));rLst('listaEnc','enc')}catch(e){toast('Erro ao salvar: '+e.message,'error')}}
+function saveInt(){if(!chkSess())return;var d=gv('intData');if(!d){toast('Preencha o campo obrigatório: data','error');return}try{var st=gv('intSetor');if(st==='Outro')st=gv('intOutroSetor')||'Outro';
+var r={id:ed||nid(),tipo:'int',tp:tSel,paciente:gv('intPaciente').trim(),data:d,turno:gv('intTurno')||'Diurno',profs:gv('intProfs'),setor:st,desc:gv('intDesc'),anexos:anx.intAnexos||[],status:'pendente',by:ss.crm,dc:hoje()};
+putR(r);toast('Intercorrência registrada'+(tSel==='Anônimo'?' — autor permanecerá anônimo':'')+(nImg(r)?' — '+nImg(r)+' foto(s) anexada(s)':''));rLst('listaInt','int')}catch(e){toast('Erro ao salvar: '+e.message,'error')}}
+function saveSup(){if(!chkSess())return;var d=gv('supData');if(!d){toast('Preencha o campo obrigatório: data','error');return}try{var g=gSV(),mo=[];document.querySelectorAll('.motivo').forEach(function(c,i){if(c.checked)mo.push(ML[i])});var sv=gv('supSalaVermelha');if(parseInt(sv)>=g&&mo.indexOf(ML[0])===-1)mo.push(ML[0]);
+var rc=[];document.querySelectorAll('.recurso').forEach(function(c,i){if(c.checked)rc.push(RC[i])});
+var r={id:ed||nid(),tipo:'sup',data:d,turno:gv('supTurno')||'Diurno',medicos:gv('supMedicos'),sit:{salaVermelha:sv,observacao:gv('supObservacao'),medicacao:gv('supMedicacao'),outrosPac:gv('supOutrosPac'),criticos:gv('supCriticos'),aguardando:gv('supAguardando'),numMedicos:gv('supNumMedicos'),outros:gv('supOutros')},motivos:mo,motivoOutro:$('motivoOutroCheck').checked?($('motivoOutroTxt').querySelector('input').value||''):'',recursos:rc,recursoOutro:$('recursoOutroCheck').checked?($('recursoOutroTxt').querySelector('input').value||''):'',desc:gv('supDesc'),anexos:anx.supAnexos||[],status:'pendente',by:ss.crm,dc:hoje()};
+putR(r);toast('Superlotação registrada com sucesso'+(nImg(r)?' — '+nImg(r)+' foto(s) anexada(s)':''));trigg(r)}catch(e){toast('Erro ao salvar: '+e.message,'error')}}
+function edRg(id){var r=getR(id);if(!r)return;if(anon(r)){toast('Registros anônimos não podem ser editados','error');return}if(r.by!==ss.crm){toast('Apenas quem criou pode editar','error');return}ed=id;
+if(r.tipo==='enc'){showTela('telaFormEnc');$('encPaciente').value=r.paciente||'';$('encData').value=r.data||'';$('encTurno').value=r.turno||'Diurno';$('encOrigem').value=r.origem||'SAMU';$('encMunicipio').value=r.municipio||'';$('encHospital').value=r.hospital||'';$('encMedico').value=r.medico||'';$('encCaso').value=r.caso||'';$('encOrientacoes').value=r.orientacoes||'';$('encCondutas').value=r.condutas||'';var ph='';(r.profs||[]).forEach(function(p){ph+=pRow(p.nome,p.esp)});$('encProfs').innerHTML=ph;anx.encAnexos=(r.anexos||[]).slice();renderChips('encAnexos')}
+else if(r.tipo==='int'){showTela('telaFormInt');tSel=r.tp||'Nominal';selectTipoInt(tSel);$('intData').value=r.data||'';$('intTurno').value=r.turno||'Diurno';$('intPaciente').value=r.paciente||'';$('intProfs').value=r.profs||'';popSetor(r.setor);$('intDesc').value=r.desc||'';anx.intAnexos=(r.anexos||[]).slice();renderChips('intAnexos')}
+else{showTela('telaFormSup');$('supData').value=r.data||'';$('supTurno').value=r.turno||'Diurno';$('supMedicos').value=r.medicos||'';var s=r.sit||{};$('supSalaVermelha').value=s.salaVermelha||'';$('supObservacao').value=s.observacao||'';$('supMedicacao').value=s.medicacao||'';$('supOutrosPac').value=s.outrosPac||'';$('supCriticos').value=s.criticos||'';$('supAguardando').value=s.aguardando||'';$('supNumMedicos').value=s.numMedicos||'';$('supOutros').value=s.outros||'';
+document.querySelectorAll('.motivo').forEach(function(c,i){c.checked=(r.motivos||[]).some(function(m){return m===ML[i]||(m.indexOf('Sala vermelha')===0&&i===0)})});$('motivoOutroCheck').checked=!!r.motivoOutro;toggleField('motivoOutroTxt');var mi=$('motivoOutroTxt').querySelector('input');if(mi)mi.value=r.motivoOutro||'';
+document.querySelectorAll('.recurso').forEach(function(c,i){c.checked=(r.recursos||[]).indexOf(RC[i])!==-1});$('recursoOutroCheck').checked=!!r.recursoOutro;toggleField('recursoOutroTxt');var ri=$('recursoOutroTxt').querySelector('input');if(ri)ri.value=r.recursoOutro||'';
+$('supDesc').value=r.desc||'';anx.supAnexos=(r.anexos||[]).slice();renderChips('supAnexos');capBar()}}
+function detalhe(r){var h='';function L(a,b){h+='<div style="display:flex;padding:1px 0;border-bottom:1px dotted #ddd"><b style="font-size:8px;min-width:70px;flex-shrink:0">'+a+':</b><span style="font-size:8px;flex:1;word-break:break-word">'+(b||'—')+'</span></div>'}
+L('Tipo',tL(r.tipo));L('Data',fmt(r.data)+' — '+r.turno);L(anon(r)?'Autor':'Registrado por',anon(r)?'Anônimo (não divulgado)':gNP(r.by));if(nImg(r))L('Fotos',nImg(r)+' foto(s)');
+if(r.tipo==='enc'){L('Paciente',r.paciente);L('Origem',(r.origem||'—')+' | '+(r.municipio||'—')+' | '+(r.hospital||'—'));L('Encaminhou',r.medico);L('Caso',r.caso);L('Orientações',r.orientacoes);L('Condutas',r.condutas)}
+else if(r.tipo==='int'){L('Paciente',r.paciente||'Não informado');L('Profissionais',r.profs||'—');L('Setor',r.setor);L('Descrição',r.desc)}
+else{L('Ocupação geral',occ(r)+'%');if(svC(r))L('ALERTA SV','Sim — '+r.sit.salaVermelha+' pacientes');L('Leitos SV/Obs/Med/Out',(r.sit.salaVermelha||'0')+'/'+(r.sit.observacao||'0')+'/'+(r.sit.medicacao||'0')+'/'+(r.sit.outrosPac||'0'));L('Crít/Aguard',(r.sit.criticos||'0')+'/'+(r.sit.aguardando||'0'));L('Médicos',r.medicos);L('Motivos',(r.motivos||[]).join(', '));L('Recursos',(r.recursos||[]).join(', '));L('Descrição',r.desc)}
+L('Status',r.status==='pendente'?'Aguardando ciência':'Ciente');return h}
+/* IMPRESSÃO COM IMAGENS: mini-fotos lado a lado, visíveis sem ocupar muito espaço */
+function imgsPrint(r){var im=imgOf(r);if(!im.length)return'';var h='<div style="margin-top:4px"><b style="font-size:8px">Fotos ('+im.length+'):</b><div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:2px">';
+im.forEach(function(a){h+='<img src="'+a.dado+'" style="width:78px;height:58px;object-fit:cover;border:1px solid #ccc;border-radius:3px">'});
+return h+'</div></div>'}
+function filt(pre){var ft=gv('relTipo'+pre),tu=gv('relTurno'+pre),de=gv('relDe'+pre),at=gv('relAte'+pre),l=recs();
+if(pre==='Prof'&&gv('relEscopoProf')==='meus')l=l.filter(function(r){return r.by===ss.crm});
+var s=gv('relSearch'+pre);if(s)l=l.filter(function(r){return busca(r,s)});
+if(ft)l=l.filter(function(r){return r.tipo===ft});if(tu)l=l.filter(function(r){return r.turno===tu});if(de)l=l.filter(function(r){return r.data>=de});if(at)l=l.filter(function(r){return r.data<=at});
+LR=l;LPr=(de&&at)?'Período: '+fmt(de)+' a '+fmt(at):(de?'Período: a partir de '+fmt(de):(at?'Período: até '+fmt(at):'Período: Todos os registros'));
+var fp=[];if(pre==='Prof')fp.push('Escopo: '+(gv('relEscopoProf')==='meus'?'Meus registros':'Todos os registros'));if(ft)fp.push('Tipo: '+tL(ft));if(tu)fp.push('Turno: '+tu);if(s)fp.push('Busca: "'+s+'"');
+LFl=fp.length?'Filtros: '+fp.join(' • '):'Filtros: Nenhum';return l}
+function visao(de,at){if(!de||!at)return'mensal';if(de===at)return'hoje';
+var d1=new Date(de+'T12:00:00'),d2=new Date(at+'T12:00:00'),dif=Math.round((d2-d1)/86400000)+1,p1=de.split('-'),p2=at.split('-');
+if(p1[0]===p2[0]&&p1[1]===p2[1]){var dim=new Date(+p1[0],+p1[1],0).getDate();if(p1[2]==='01'&&p2[2]===String(dim).padStart(2,'0'))return'diario'}
+if(dif>=6&&dif<=8)return'semana';
+if(p1[0]===p2[0]&&p1[1]===p2[1])return'diario';
+return'mensal'}
+function contagemTxt(ls,vs){var a=[];for(var i=0;i<ls.length;i++)a.push(ls[i]+': '+vs[i]+' registro'+(vs[i]===1?'':'s'));return a.join(' | ')}
+function gerarRelatorio(tipo){var pre=tipo==='prof'?'Prof':'Coord',l=filt(pre),ft=gv('relTipo'+pre),de=gv('relDe'+pre),at=gv('relAte'+pre);
+var tot=l.length,en=l.filter(function(r){return r.tipo==='enc'}).length,ic=l.filter(function(r){return r.tipo==='int'}).length,su=l.filter(function(r){return r.tipo==='sup'}).length,tf=l.reduce(function(s,r){return s+nImg(r)},0);
+$('stats'+pre).innerHTML='<div class="stats-grid"><div class="stat-card"><div class="stat-num">'+tot+'</div><div class="stat-lbl">Total de registros</div></div><div class="stat-card"><div class="stat-num">'+en+'</div><div class="stat-lbl">Encaminhamentos</div></div><div class="stat-card"><div class="stat-num">'+ic+'</div><div class="stat-lbl">Intercorrências</div></div><div class="stat-card"><div class="stat-num">'+su+'</div><div class="stat-lbl">Superlotação</div></div></div>';
+var CO=['#C8102E','#F8B4C2','#FCE7EB'],ch,LS=[],VV=[],tt,v=visao(de,at);
+if(v==='hoje'){LS=['Diurno','Noturno'];VV=[l.filter(function(r){return r.turno==='Diurno'}).length,l.filter(function(r){return r.turno==='Noturno'}).length];tt='Registros por turno — Hoje (diurno ou noturno)'}
+else if(v==='semana'){LS=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];VV=[0,0,0,0,0,0,0];var d1=new Date(de+'T12:00:00');for(var w=0;w<7;w++){var ddw=new Date(d1);ddw.setDate(ddw.getDate()+w);var dstr=ddw.toISOString().split('T')[0];VV[w]=l.filter(function(r){return r.data===dstr}).length}tt='Registros por dia da semana — 7 dias'}
+else if(v==='diario'){var pd1=(de||hoje()).split('-'),dim2=new Date(+pd1[0],+pd1[1],0).getDate();for(var dd=1;dd<=dim2;dd++){LS.push(String(dd).padStart(2,'0'));VV.push(0)}l.forEach(function(r){var dn=parseInt((r.data||'').split('-')[2],10);if(dn>=1&&dn<=dim2)VV[dn-1]++});tt='Registros por dia — '+NM[+pd1[1]-1]+' '+pd1[0]}
+else{LS=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];VV=[0,0,0,0,0,0,0,0,0,0,0,0];l.forEach(function(r){var m=parseInt((r.data||'').split('-')[1],10)-1;if(m>=0&&m<12)VV[m]++});tt='Registros por mês'}
+LC=contagemTxt(LS,VV);
+ch='<div class="chart-card"><h3>'+tt+'</h3>'+barC(LS,VV)+leg(LS,VV,null)+'</div>';
+if(ft==='int'){var sc={};l.forEach(function(r){var s2=r.setor||'Sem setor';sc[s2]=(sc[s2]||0)+1});var sL=Object.keys(sc),sV=sL.map(function(k){return sc[k]}),sC=['#C8102E','#F8B4C2','#FCE7EB','#D4A017','#FDF8EE','#9B0B23'];ch+='<div class="chart-card"><h3>Intercorrências por setor</h3>'+pieC(sL,sV,sC)+leg(sL,sV,sC)+'</div>'}
+else ch+='<div class="chart-card"><h3>Distribuição por tipo</h3>'+pieC(['Encaminhamentos','Intercorrências','Superlotação'],[en,ic,su],CO)+leg(['Encaminhamentos','Intercorrências','Superlotação'],[en,ic,su],CO)+'</div>';
+$('charts'+pre).innerHTML=ch+'<div class="chart-actions" style="grid-column:1/-1"><button type="button" class="btn btn-sm btn-outline" onclick="impG(\''+pre+'\')">Imprimir gráficos</button><button type="button" class="btn btn-sm btn-outline" onclick="impR(\''+pre+'\')">Imprimir relatório completo</button><button type="button" class="btn btn-sm btn-ghost" onclick="shRelDet()">Compartilhar relatório</button></div>';
+$('tabelaRel'+pre).innerHTML=l.length?'<div class="report-summary">'+tot+' registro(s) • '+LPr+' • '+LFl+(tf?' • 📷 '+tf+' foto(s)':'')+'</div>'+l.map(function(r){return card(r,false,false)}).join(''):'<div class="empty"><p>Nenhum registro no período</p></div>'}
+function leg(ls,vs,cs){var C=cs||['#C8102E','#F8B4C2','#FCE7EB','#D4A017','#9B0B23','#F47289'],h='<div class="chart-legend">';ls.forEach(function(l,i){h+='<div class="cl-row"><div class="cl-left"><span class="cl-sw" style="background:'+C[i%C.length]+'"></span>'+l+'</div><span><b>'+vs[i]+'</b> &nbsp;registro(s)</span></div>'});return h+'</div>'}
+function barC(ls,vs){var mx=Math.max.apply(null,vs.concat([1])),W=340,H=150,bw=W/ls.length,b='';ls.forEach(function(l,i){var bh=(vs[i]/mx)*(H-30);b+='<rect x="'+(i*bw+2)+'" y="'+(H-bh-15)+'" width="'+Math.max(bw-3,3)+'" height="'+Math.max(bh,vs[i]?2:0)+'" fill="#C8102E" rx="2"/><text x="'+(i*bw+bw/2)+'" y="'+(H-4)+'" text-anchor="middle" font-size="'+(ls.length>16?'7':'9')+'" fill="#999">'+l+'</text>'+(vs[i]?'<text x="'+(i*bw+bw/2)+'" y="'+(H-bh-19)+'" text-anchor="middle" font-size="9" fill="#333" font-weight="bold">'+vs[i]+'</text>':'')});return'<svg viewBox="0 0 340 150" width="100%">'+b+'</svg>'}
+function pieC(ls,vs,cs){var t=0;vs.forEach(function(x){t+=x});if(!t)t=1;var ac=0,cx=70,cy=70,r=56,a='';vs.forEach(function(v2,j){if(!v2)return;var s=ac/t*2*Math.PI;ac+=v2;var e=ac/t*2*Math.PI,x1=cx+r*Math.cos(s-Math.PI/2),y1=cy+r*Math.sin(s-Math.PI/2),x2=cx+r*Math.cos(e-Math.PI/2),y2=cy+r*Math.sin(e-Math.PI/2),lg=e-s>Math.PI?1:0;a+='<path d="M'+cx+','+cy+' L'+x1+','+y1+' A'+r+','+r+' 0 '+lg+' 1 '+x2+','+y2+' Z" fill="'+cs[j]+'" stroke="#fff" stroke-width="1.5"/>'});return'<div style="display:flex;justify-content:center;margin-bottom:4px"><svg width="140" height="140" viewBox="0 0 140 140">'+a+'<circle cx="'+cx+'" cy="'+cy+'" r="22" fill="#fff"/><text x="'+cx+'" y="'+(cy+4)+'" text-anchor="middle" font-size="13" font-weight="bold">'+t+'</text></svg></div>'}
+function impG(pre){var l=LR||recs(),ch=$('charts'+pre),cards=ch.querySelectorAll('.chart-card'),h='<div style="border:1.5px solid #C8102E;border-radius:6px;padding:8px 14px;margin-bottom:10px;font-size:11px"><b style="color:#C8102E;font-size:13px">Relatório de Gráficos — Pronto Atendimento HNSM</b><br><b>'+LPr+'</b><br>'+LFl+'<br><b>Total: '+l.length+' registro(s)</b><br><b>Contagem:</b> '+LC+'</div>';
+cards.forEach(function(cd){var t=cd.querySelector('h3'),svg=cd.querySelector('svg'),lg=cd.querySelector('.chart-legend');
+h+='<div style="margin:16px 0;page-break-inside:avoid"><h3 style="color:#C8102E;font-size:13px;border-bottom:1px solid #ddd;padding-bottom:4px;margin:0 0 10px">'+(t?t.textContent:'')+'</h3><table style="width:100%;border-collapse:collapse"><tr><td style="width:56%;vertical-align:top;padding:0">'+(svg?new XMLSerializer().serializeToString(svg):'')+'</td><td style="width:44%;vertical-align:top;padding:0 0 0 14px">';
+if(lg){h+='<table style="width:100%;border-collapse:collapse">';lg.querySelectorAll('.cl-row').forEach(function(row){var sw=row.querySelector('.cl-sw'),bg=sw?sw.getAttribute('style').replace('background:','').trim():'#ccc';h+='<tr><td style="border:1px solid #ddd;padding:6px 8px;font-size:10px"><span style="display:inline-block;width:10px;height:10px;background:'+bg+';border-radius:2px;margin-right:8px;vertical-align:middle"></span>'+row.textContent.trim()+'</td></tr>'});h+='</table>'}else h+='<span style="font-size:10px;color:#999">Sem dados neste gráfico</span>';
+h+='</td></tr></table></div>'});
+var w=window.open('','_blank');w.document.write('<html><head><title>HNSM — Gráficos</title><style>body{font-family:Arial;padding:22px;color:#333}table{border-collapse:collapse}td{vertical-align:top}@page{margin:12mm}@media print{div{page-break-inside:avoid}}</style></head><body>'+h+'</body></html>');w.document.close();setTimeout(function(){w.print()},300)}
+/* RELATÓRIO COMPLETO: pergunta ao usuário — com imagens ou sem imagens */
+function impR(pre){var l=LR||recs();if(!l.length){toast('Nenhum registro no período','error');return}
+var tf=l.reduce(function(s,r){return s+nImg(r)},0);
+if(!tf){impRgo(pre,false);return}
+mAsk('Imprimir relatório completo','Foram encontradas <b>'+tf+' foto(s)</b> nos registros deste período. Deseja imprimir o relatório <b>com as imagens</b> ou <b>sem as imagens</b> (mais compacto)?',[{l:'📷 Com imagens',cls:'btn-primary',fn:function(){impRgo(pre,true)}},{l:'Sem imagens (compacto)',cls:'btn-outline',fn:function(){impRgo(pre,false)}}])}
+function impRgo(pre,comImg){var l=LR||recs(),c={enc:0,int:0,sup:0};l.forEach(function(r){if(c[r.tipo]!==undefined)c[r.tipo]++});
+var h='<div style="background:#C8102E;color:#fff;border-radius:6px;padding:8px 14px;margin-bottom:8px"><b style="font-size:13px">Relatório Completo — Pronto Atendimento HNSM</b><p style="margin:2px 0 0;font-size:9.5px">'+LPr+' • '+LFl+(comImg?' • Com imagens':' • Sem imagens')+'<br>'+l.length+' registro(s): '+c.enc+' Encaminhamentos • '+c.int+' Intercorrências • '+c.sup+' Superlotação</p><p style="margin:2px 0 0;font-size:9.5px"><b>Contagem:</b> '+LC+'</p></div>';
+l.forEach(function(r){h+='<div style="page-break-inside:avoid"><table style="width:100%;border-collapse:collapse;table-layout:fixed"><tr><th colspan="2" style="background:#C8102E;color:#fff;padding:3px;font-size:8.5px;text-align:left">'+tL(r.tipo)+' — '+fmt(r.data)+' — '+r.turno+'</th></tr><tr><td colspan="2" style="border:1px solid #ccc;padding:4px 6px">'+detalhe(r)+(comImg?imgsPrint(r):'')+'</td></tr></table></div>'});
+var w=window.open('','_blank');w.document.write('<html><head><title>HNSM — Relatório Completo</title><style>body{font-family:Arial;padding:12px;color:#333;font-size:8.5px}table{border-collapse:collapse}th,td{text-align:left;vertical-align:top;word-break:break-word}img{max-height:58px}@page{margin:8mm}@media print{div{page-break-inside:avoid}}</style></head><body>'+h+'</body></html>');w.document.close();setTimeout(function(){w.print()},300)}
+function shRelDet(){var l=LR||recs(),c={enc:0,int:0,sup:0};l.forEach(function(r){if(c[r.tipo]!==undefined)c[r.tipo]++});
+var h='<h2>Relatório Completo — Pronto Atendimento HNSM</h2><p><b>'+LPr+'</b><br>'+LFl+'</p><p><b>Total:</b> '+l.length+' registro(s): '+c.enc+' Encaminhamentos • '+c.int+' Intercorrências • '+c.sup+' Superlotação</p><p><b>Contagem:</b> '+LC+'</p><hr>';
+l.forEach(function(r){h+=conteudo(r)+'<hr>'});
+shMenu(h,'Compartilhar relatório')}
+/* REGISTRO INDIVIDUAL: sempre inclui as fotos em tamanho reduzido */
+function impRg(id){var r=getR(id);if(!r)return;var w=window.open('','_blank');w.document.write('<html><head><title>HNSM</title><style>body{font-family:Arial;padding:24px;color:#333;font-size:11px}h1{color:#C8102E;border-bottom:2px solid #C8102E;padding-bottom:6px;font-size:15px}p{font-size:10px}img{max-height:58px}</style></head><body><h1>HNSM — Registro Individual</h1><p><b>Total:</b> 1 registro</p><div style="border:1px solid #ddd;border-radius:6px;padding:10px">'+detalhe(r)+imgsPrint(r)+'</div></body></html>');w.document.close();setTimeout(function(){w.print()},300)}
+function pAnos(){var s=$('mapaFilterAno');if(!s)return;var cy=new Date().getFullYear(),o='';for(var y=cy-2;y<=cy+1;y++)o+='<option value="'+y+'"'+(y===cy?' selected':'')+'>'+y+'</option>';s.innerHTML=o}
+function renderMapa(){var fM=parseInt(gv('mapaFilterMes')),fA=parseInt(gv('mapaFilterAno')),fT=gv('mapaFilterTurno');
+if(fM===-1){mapaAnoV(fA,fT);return}
+var ms=fA+'-'+String(fM+1).padStart(2,'0')+'-01',dim=new Date(fA,fM+1,0).getDate(),me=fA+'-'+String(fM+1).padStart(2,'0')+'-'+String(dim).padStart(2,'0');
+var sups=db.regs.filter(function(r){return r.tipo==='sup'&&r.data>=ms&&r.data<=me&&(!fT||r.turno===fT)}),dm={},di=0;
+sups.forEach(function(r){dm[r.data]=(dm[r.data]||0)+1;if(r.turno==='Diurno')di++});
+var td2=Object.keys(dm).length,no=sups.length-di,tma=no>di?'Noturno':(di>no?'Diurno':'—'),pctd=td2?Math.round(td2/dim*100):0;
+var h='<div class="mapa-summary"><div class="mapa-stat-card"><div class="num">'+td2+'</div><div class="lbl">Dias com superlotação</div></div><div class="mapa-stat-card"><div class="num">'+sups.length+'</div><div class="lbl">Notificações no mês</div></div><div class="mapa-stat-card"><div class="num">'+tma+'</div><div class="lbl">Turno mais afetado</div></div></div>';
+var heat='';for(var d=1;d<=dim;d++){var ds=fA+'-'+String(fM+1).padStart(2,'0')+'-'+String(d).padStart(2,'0'),c=dm[ds]||0;heat+='<div style="background:'+(c===0?'#F4F4F4':c===1?'#FDF2F4':c===2?'#FAD4DA':c===3?'#F0A5B0':'#C8102E')+'"></div>'}
+h+='<div class="mapa-cal-container"><div class="mapa-header"><h3>'+NM[fM]+' '+fA+'</h3><span style="font-size:12px;color:#999;font-weight:600">'+pctd+'% do mês • Passe o mouse sobre o dia</span></div><div class="mapa-grid" id="mapaGrid"></div><div class="mapa-heat-strip">'+heat+'</div><div class="mapa-legend"><span><span class="sw" style="background:#F4F4F4"></span>Sem registro</span><span><span class="sw" style="background:#FDF2F4"></span>1</span><span><span class="sw" style="background:#FAD4DA"></span>2</span><span><span class="sw" style="background:#F0A5B0"></span>3</span><span><span class="sw" style="background:#C8102E"></span>4+</span></div></div><div id="mapaDia"></div>';
+$('mapaContainer').innerHTML=h;
+var fd=new Date(fA,fM,1).getDay(),g='';['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'].forEach(function(d){g+='<div class="mapa-dow">'+d+'</div>'});
+for(var e=0;e<fd;e++)g+='<div class="mapa-day empty"></div>';
+for(var day=1;day<=dim;day++){var ds2=fA+'-'+String(fM+1).padStart(2,'0')+'-'+String(day).padStart(2,'0'),c2=dm[ds2]||0,cls='mapa-day'+(c2===1?' int1':c2===2?' int2':c2===3?' int3':c2===4?' int4':c2>=5?' int5':'');
+g+='<div class="'+cls+'" onclick="mapaDia(\''+ds2+'\')" onmouseenter="tipDia(event,\''+ds2+'\')" onmouseleave="tipOff()"><span>'+day+'</span>'+(c2?'<span class="day-badge">'+c2+'</span>':'')+'</div>'}
+$('mapaGrid').innerHTML=g}
+function mapaDia(date){var fT=gv('mapaFilterTurno'),sups=db.regs.filter(function(r){return r.tipo==='sup'&&r.data===date&&(!fT||r.turno===fT)});$('mapaDia').innerHTML=sups.length?'<h4 style="margin-bottom:6px;font-size:14px">Superlotações em '+fmt(date)+'</h4>'+sups.map(function(r){return card(r,true,false)}).join(''):''}
+function tipDia(ev,date){var t=$('dayTip');if(!t)return;var fT=gv('mapaFilterTurno'),sups=db.regs.filter(function(r){return r.tipo==='sup'&&r.data===date&&(!fT||r.turno===fT)});
+if(!sups.length){t.style.display='none';return}
+var di=sups.filter(function(r){return r.turno==='Diurno'}).length,no=sups.length-di;
+t.innerHTML='<b>'+fmt(date)+'</b><br>Registros de superlotação: '+sups.length+'<br>Diurnos: '+di+' • Noturnos: '+no;
+t.style.left=Math.min(ev.clientX+14,window.innerWidth-240)+'px';t.style.top=(ev.clientY+16)+'px';t.style.display='block'}
+function tipOff(){var t=$('dayTip');if(t)t.style.display='none'}
+function mapaAnoV(ano,fT){var l=db.regs.filter(function(r){return r.tipo==='sup'&&r.data>=ano+'-01-01'&&r.data<=ano+'-12-31'&&(!fT||r.turno===fT)});
+var ds={};l.forEach(function(r){ds[r.data]=1});var dias=Object.keys(ds).length,diu=l.filter(function(r){return r.turno==='Diurno'}).length;
+var h='<div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:15px;margin-bottom:13px;display:flex;gap:18px;justify-content:center;flex-wrap:wrap"><div style="text-align:center"><div style="font-size:24px;font-weight:800;color:var(--red)">'+l.length+'</div><div style="font-size:11px;color:var(--gray)">Total em '+ano+'</div></div><div style="text-align:center"><div style="font-size:24px;font-weight:800;color:var(--red)">'+dias+'</div><div style="font-size:11px;color:var(--gray)">Dias c/ superlotação</div></div><div style="text-align:center"><div style="font-size:24px;font-weight:800;color:var(--red)">'+diu+'</div><div style="font-size:11px;color:var(--gray)">Diurnas</div></div><div style="text-align:center"><div style="font-size:24px;font-weight:800;color:var(--red)">'+(l.length-diu)+'</div><div style="font-size:11px;color:var(--gray)">Noturnas</div></div></div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">';
+for(var m=0;m<12;m++){var ms=ano+'-'+String(m+1).padStart(2,'0')+'-01',dmm=new Date(ano,m+1,0).getDate(),me=ano+'-'+String(m+1).padStart(2,'0')+'-'+String(dmm).padStart(2,'0'),sm=l.filter(function(r){return r.data>=ms&&r.data<=me}),dd={};sm.forEach(function(r){dd[r.data]=1});
+h+='<div style="background:#fff;border:1px solid var(--border);border-radius:8px;padding:12px;cursor:pointer" onclick="document.getElementById(\'mapaFilterMes\').value='+m+';renderMapa()"><h4 style="font-size:13px;font-weight:600;margin-bottom:6px">'+NM[m]+' '+ano+'</h4><div style="font-size:11px;font-weight:600;color:var(--red)">'+sm.length+' notif. • '+Object.keys(dd).length+' dia(s)</div><div style="font-size:11px;color:var(--gray)">☀️ '+sm.filter(function(r){return r.turno==='Diurno'}).length+' • 🌙 '+sm.filter(function(r){return r.turno==='Noturno'}).length+'</div></div>'}
+h+='</div>';$('mapaContainer').innerHTML='<div class="report-summary">Relatório anual de '+ano+(fT?' • Turno: '+fT:'')+' — clique em um mês para o calendário detalhado</div>'+h}
+function imprimirMapa(){var fM=parseInt(gv('mapaFilterMes')),fT=gv('mapaFilterTurno'),fA=parseInt(gv('mapaFilterAno')),l,per,anual=fM===-1;
+if(anual){l=db.regs.filter(function(r){return r.tipo==='sup'&&r.data>=fA+'-01-01'&&r.data<=fA+'-12-31'&&(!fT||r.turno===fT)});per='Ano completo — '+fA}
+else{var dmm=new Date(fA,fM+1,0).getDate();l=db.regs.filter(function(r){return r.tipo==='sup'&&r.data>=fA+'-'+String(fM+1).padStart(2,'0')+'-01'&&r.data<=fA+'-'+String(fM+1).padStart(2,'0')+'-'+String(dmm).padStart(2,'0')&&(!fT||r.turno===fT)});per=NM[fM]+' '+fA}
+var dT={Diurno:0,Noturno:0};l.forEach(function(r){if(dT[r.turno]!==undefined)dT[r.turno]++});var sv=0;l.forEach(function(r){if(svC(r))sv++});
+var dd={};l.forEach(function(r){dd[r.data]=1});var dias=Object.keys(dd).length,dds=Object.keys(dd).sort();
+var cnt=[];dds.forEach(function(dk){var q=l.filter(function(r){return r.data===dk}).length;cnt.push(dk.split('-')[2]+': '+q+' registro'+(q===1?'':'s'))});
+var h='<div style="background:#C8102E;color:#fff;border-radius:10px;padding:16px;text-align:center;margin-bottom:14px"><h1 style="color:#fff;border:none;margin:0;padding:0;font-size:17px">⚠ RELATÓRIO DE SUPERLOTAÇÃO</h1><p style="margin:4px 0 0;font-size:12px;font-weight:bold">'+per+(fT?' • Turno: '+fT:'')+'</p><p style="margin:2px 0 0;font-size:10px">'+l.length+' notificação(ões) • '+dias+' dia(s) afetado(s)</p><p style="margin:4px 0 0;font-size:9.5px;font-weight:bold">'+(cnt.length?'Contagem: '+cnt.join(' | '):'Sem registros no período')+'</p></div>';
+h+='<div style="display:flex;gap:8px;margin-bottom:16px"><div style="border:2px solid #C8102E;border-radius:8px;padding:10px;flex:1;text-align:center"><b style="color:#C8102E;font-size:26px;display:block">'+dias+'</b><span style="font-size:9px;color:#666">DIAS COM SUPERLOTAÇÃO</span></div><div style="border:2px solid #C8102E;border-radius:8px;padding:10px;flex:1;text-align:center"><b style="color:#C8102E;font-size:26px;display:block">'+l.length+'</b><span style="font-size:9px;color:#666">NOTIFICAÇÕES</span></div><div style="border:2px solid #C8102E;border-radius:8px;padding:10px;flex:1;text-align:center"><b style="color:#C8102E;font-size:26px;display:block">'+sv+'</b><span style="font-size:9px;color:#666">ALERTAS SALA VERMELHA ('+gSV()+'+)</span></div></div>';
+h+='<h2 style="color:#C8102E;font-size:13px;border-bottom:2px solid #C8102E;padding-bottom:3px">Afetação por turno</h2><table style="width:60%;border-collapse:collapse"><tr><th style="background:#C8102E;color:#fff;padding:3px;font-size:9px">Turno</th><th style="background:#C8102E;color:#fff;padding:3px;font-size:9px">Notificações</th><th style="background:#C8102E;color:#fff;padding:3px;font-size:9px">Proporção</th></tr><tr><td style="border:1px solid #ddd;padding:3px;font-size:9px">Diurno</td><td style="border:1px solid #ddd;padding:3px;font-size:9px;text-align:center">'+dT.Diurno+'</td><td style="border:1px solid #ddd;padding:3px;font-size:9px;text-align:center">'+(l.length?Math.round(dT.Diurno/l.length*100)+'%':'—')+'</td></tr><tr><td style="border:1px solid #ddd;padding:3px;font-size:9px">Noturno</td><td style="border:1px solid #ddd;padding:3px;font-size:9px;text-align:center">'+dT.Noturno+'</td><td style="border:1px solid #ddd;padding:3px;font-size:9px;text-align:center">'+(l.length?Math.round(dT.Noturno/l.length*100)+'%':'—')+'</td></tr></table>';
+if(anual){h+='<h2 style="color:#C8102E;font-size:13px;border-bottom:2px solid #C8102E;padding-bottom:3px;margin-top:14px">Resumo por mês — '+fA+'</h2><table style="width:100%;border-collapse:collapse"><tr><th style="background:#C8102E;color:#fff;padding:3px;font-size:9px">Mês</th><th style="background:#C8102E;color:#fff;padding:3px;font-size:9px">Notif.</th><th style="background:#C8102E;color:#fff;padding:3px;font-size:9px">Diurno</th><th style="background:#C8102E;color:#fff;padding:3px;font-size:9px">Noturno</th><th style="background:#C8102E;color:#fff;padding:3px;font-size:9px">Dias</th></tr>';
+for(var mi=0;mi<12;mi++){var ms2=fA+'-'+String(mi+1).padStart(2,'0')+'-01',dm2=new Date(fA,mi+1,0).getDate(),me2=fA+'-'+String(mi+1).padStart(2,'0')+'-'+String(dm2).padStart(2,'0'),sm=l.filter(function(r){return r.data>=ms2&&r.data<=me2}),dsM={};sm.forEach(function(r){dsM[r.data]=1});
+h+='<tr><td style="border:1px solid #ddd;padding:3px;font-size:9px">'+NM[mi]+'</td><td style="border:1px solid #ddd;padding:3px;font-size:9px;text-align:center">'+sm.length+'</td><td style="border:1px solid #ddd;padding:3px;font-size:9px;text-align:center">'+sm.filter(function(r){return r.turno==='Diurno'}).length+'</td><td style="border:1px solid #ddd;padding:3px;font-size:9px;text-align:center">'+sm.filter(function(r){return r.turno==='Noturno'}).length+'</td><td style="border:1px solid #ddd;padding:3px;font-size:9px;text-align:center">'+Object.keys(dsM).length+'</td></tr>'}
+h+='</table>'}
+h+='<h2 style="color:#C8102E;font-size:13px;border-bottom:2px solid #C8102E;padding-bottom:3px;margin-top:14px">Superlotações por dia</h2><table style="width:100%;border-collapse:collapse"><tr><th style="background:#C8102E;color:#fff;padding:3px;font-size:9px">Data</th><th style="background:#C8102E;color:#fff;padding:3px;font-size:9px">Qtd</th><th style="background:#C8102E;color:#fff;padding:3px;font-size:9px">Diurno/Noturno</th><th style="background:#C8102E;color:#fff;padding:3px;font-size:9px">Ocupação</th></tr>';
+dds.forEach(function(ds3){var sd=l.filter(function(r){return r.data===ds3}),dD=sd.filter(function(s){return s.turno==='Diurno'}).length,oc=sd.map(function(s){return occ(s)+'%'}).join(', ');
+h+='<tr><td style="border:1px solid #ddd;padding:3px;font-size:9px">'+fmt(ds3)+'</td><td style="border:1px solid #ddd;padding:3px;font-size:9px;text-align:center">'+sd.length+'</td><td style="border:1px solid #ddd;padding:3px;font-size:9px;text-align:center">'+dD+' / '+(sd.length-dD)+'</td><td style="border:1px solid #ddd;padding:3px;font-size:9px;text-align:center">'+oc+'</td></tr>'});
+h+='</table>';var w=window.open('','_blank');w.document.write('<html><head><title>HNSM — Superlotação</title><style>body{font-family:Arial;padding:18px;color:#333}h2{font-size:13px}table{border-collapse:collapse}th,td{text-align:left}@page{margin:10mm}@media print{tr{page-break-inside:avoid}}</style></head><body>'+h+'</body></html>');w.document.close();setTimeout(function(){w.print()},300)}
+function compartilharMapa(){var c=$('mapaContainer');if(!c)return;shMenu('<h2>Indicador de Superlotação</h2><pre style="white-space:pre-wrap;color:#333;font-size:12px">'+c.innerText.replace(/\n+/g,'\n').substring(0,800)+'</pre>','Compartilhar indicador')}
+function salvarCapacidade(){var g=parseInt(gv('capGatilhoSV'))||2;db.cap={salaVermelha:parseInt(gv('capVermelha'))||0,observacao:parseInt(gv('capObservacao'))||0,medicacao:parseInt(gv('capMedicacao'))||0,gatilhoSV:g};save();toast('Capacidade e gatilho salvos (Sala Vermelha dispara com '+g+' paciente(s))')}
+function ldCap(){var c=db.cap;$('capVermelha').value=c.salaVermelha||0;$('capObservacao').value=c.observacao||0;$('capMedicacao').value=c.medicacao||0;$('capGatilhoSV').value=c.gatilhoSV||2}
+function salvarTrigger(){db.trg={ativo:$('triggerAtivo').checked,lim:parseInt(gv('triggerThreshold'))||150,mail:gv('triggerEmails').trim()};save();toast('Gatilho salvo')}
+function trgCfg(){var t=db.trg||{ativo:true,lim:150,mail:''};$('triggerAtivo').checked=t.ativo;$('triggerThreshold').value=t.lim;$('triggerEmails').value=t.mail||''}
+function trgLog(){var h='';(db.tlog||[]).slice(0,5).forEach(function(l){h+='<div style="padding:8px 10px;background:var(--bg);border:1px solid var(--border-light);border-radius:8px;margin-bottom:4px;font-size:13px">'+fmt(l.data.split('T')[0])+' • '+(l.tp==='sala_vermelha'?'Sala Vermelha':'Ocupação geral')+' : '+l.pct+'%</div>'});if(h)h='<div style="margin-top:12px;font-size:12px;font-weight:600;color:#999">Disparos recentes:</div>'+h;$('triggerLogList').innerHTML=h}
+function cadastrarProfissional(){var crm=gv('cadCrm').trim(),nome=gv('cadNome').trim();if(!crm||!nome){toast('Preencha CRM e nome','error');return}if(db.prof.some(function(p){return p.crm===crm})){toast('CRM já cadastrado','error');return}db.prof.push({crm:crm,nome:nome,senha:crm,ts:true});save();toast('Profissional cadastrado. Senha inicial: o CRM');$('cadCrm').value='';$('cadNome').value='';rProfs()}
+function rProfs(){var h='';db.prof.forEach(function(p){h+='<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:var(--bg);border:1px solid var(--border-light);border-radius:8px;margin-bottom:4px;font-size:13px"><div><b>'+p.nome+'</b><br><span style="color:var(--gray);font-size:11px">CRM: '+p.crm+(p.ts?' • Senha pendente':'')+'</span></div><button type="button" class="btn btn-sm btn-outline" onclick="resetarSenha(\''+p.crm+'\')">Resetar senha</button></div>'});
+if(!h)h='<div class="empty" style="padding:20px"><p>Nenhum profissional cadastrado ainda — cadastre o primeiro no formulário acima.</p></div>';
+$('listaProfissionais').innerHTML=h}
+function resetarSenha(crm){mShow('Resetar senha','A senha será redefinida para o CRM ('+crm+'). O profissional deverá trocá-la no próximo acesso.',function(){db.prof.forEach(function(p){if(p.crm===crm){p.senha=crm;p.ts=true}});save();rProfs();toast('Senha resetada')},false)}
+function cadastrarCoordenacao(){var n=gv('cadCoordNome').trim(),u=gv('cadCoordUser').trim(),s=gv('cadCoordSenha');if(!n||!u||!s){toast('Preencha nome, usuário e senha','error');return}if(s.length<6){toast('Senha mínima de 6 caracteres','error');return}if(u==='hnsmpa'){toast('O usuário hnsmpa é o acesso central fixo e não pode ser recriado','error');return}if(db.coord.some(function(c){return c.usr===u})){toast('Usuário já existe','error');return}db.coord.push({nome:n,usr:u,mail:gv('cadCoordEmail').trim(),senha:s});save();toast('Usuário cadastrado');['cadCoordNome','cadCoordUser','cadCoordEmail','cadCoordSenha'].forEach(function(i){$(i).value=''})}
+function rSet(){var h='';db.setores.forEach(function(s){h+='<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:var(--bg);border:1px solid var(--border-light);border-radius:8px;margin-bottom:4px;font-size:13px"><span>'+s+'</span><button type="button" style="color:var(--red);font-size:16px;padding:2px 6px;cursor:pointer" onclick="delSetor(\''+s+'\')">✕</button></div>'});$('listaSetores').innerHTML=h;popSetor('');envSet()}
+function adicionarSetor(){var n=gv('cadSetorNome').trim();if(!n){toast('Digite o nome do setor','error');return}if(db.setores.indexOf(n)!==-1){toast('Setor já existe','error');return}db.setores.push(n);save();$('cadSetorNome').value='';rSet();toast('Setor adicionado')}
+function delSetor(n){mShow('Remover setor','Remover "'+n+'"?',function(){db.setores=db.setores.filter(function(s){return s!==n});save();rSet();toast('Setor removido','info')})}
+function envSet(){var s=$('envSetor');if(s){var o='';db.setores.forEach(function(x){o+='<option value="'+x+'">'+x+'</option>'});s.innerHTML=o}}
+function adicionarEnvio(){var em=gv('envEmails').trim();if(!em){toast('Digite pelo menos um e-mail','error');return}db.env.push({id:Date.now(),escopo:gv('envEscopo'),setor:gv('envSetor'),dia:gv('envDia'),emails:em});save();$('envEmails').value='';rEnv();toast('Configuração adicionada')}
+function rEnv(){var EL={geral:'Geral',enc:'Encaminhamentos',int:'Intercorrências',sup:'Superlotação',setor:'Setor específico'},h='';db.env.forEach(function(e){h+='<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:var(--bg);border:1px solid var(--border-light);border-radius:8px;margin-bottom:4px;font-size:13px"><div><b>'+EL[e.escopo]+'</b>'+(e.setor?' • '+e.setor:'')+' • Dia '+e.dia+'<br><span style="color:var(--gray);font-size:11px">'+e.emails+'</span></div><button type="button" style="color:var(--red);font-size:16px;padding:2px 6px;cursor:pointer" onclick="delEnvio('+e.id+')">✕</button></div>'});$('listaEnvios').innerHTML=h}
+function delEnvio(id){mShow('Remover','Remover esta configuração de envio?',function(){db.env=db.env.filter(function(e){return e.id!==id});save();rEnv();toast('Removida','info')})}
+</script>
+</body>
+</html>
